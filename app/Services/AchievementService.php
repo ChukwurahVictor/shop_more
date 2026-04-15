@@ -8,6 +8,8 @@ use App\Events\AchievementUnlocked;
 use App\Models\User;
 use App\Models\UserAchievement;
 use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Facades\DB;
 
 class AchievementService
 {
@@ -75,20 +77,26 @@ class AchievementService
     {
         $purchaseCount = $user->purchases()->count();
 
-        foreach (self::MILESTONES as $name => $threshold) {
-            if ($purchaseCount >= $threshold) {
-                $record = UserAchievement::firstOrCreate(
-                    [
-                        'user_id'          => $user->id,
-                        'achievement_name' => $name,
-                    ],
-                    ['unlocked_at' => now()],
-                );
+        DB::transaction(function () use ($user, $purchaseCount): void {
+            foreach (self::MILESTONES as $name => $threshold) {
+                if ($purchaseCount >= $threshold) {
+                    try {
+                        $record = UserAchievement::firstOrCreate(
+                            [
+                                'user_id'          => $user->id,
+                                'achievement_name' => $name,
+                            ],
+                            ['unlocked_at' => now()],
+                        );
 
-                if ($record->wasRecentlyCreated) {
-                    $this->events->dispatch(new AchievementUnlocked($user, $name));
+                        if ($record->wasRecentlyCreated) {
+                            $this->events->dispatch(new AchievementUnlocked($user, $name));
+                        }
+                    } catch (UniqueConstraintViolationException) {
+                        // Another concurrent request already created this record; safe to skip.
+                    }
                 }
             }
-        }
+        });
     }
 }

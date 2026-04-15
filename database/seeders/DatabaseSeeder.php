@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Services\AchievementService;
 use App\Services\BadgeService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -15,6 +16,15 @@ class DatabaseSeeder extends Seeder
     {
         $achievementService = app(AchievementService::class);
         $badgeService       = app(BadgeService::class);
+
+        // Known test user for manual/frontend testing
+        $testUser = User::firstOrCreate(
+            ['email' => 'test@bumpa.com'],
+            [
+                'name'     => 'Test User',
+                'password' => Hash::make('password'),
+            ]
+        );
 
         /** @var list<array{purchases: int}> $scenarios */
         $scenarios = [

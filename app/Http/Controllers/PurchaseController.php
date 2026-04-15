@@ -9,6 +9,7 @@ use App\Models\Purchase;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PurchaseController extends Controller
 {
@@ -21,13 +22,15 @@ class PurchaseController extends Controller
         }
 
         $validated = $request->validate([
-            'amount' => ['required', 'numeric', 'min:1'],
+            'amount' => ['required', 'numeric', 'min:1', 'max:1000000'],
         ]);
 
         /** @var Purchase $purchase */
-        $purchase = $model->purchases()->create($validated);
-
-        event(new PurchaseCompleted($model, $purchase));
+        $purchase = DB::transaction(function () use ($model, $validated): Purchase {
+            $purchase = $model->purchases()->create($validated);
+            event(new PurchaseCompleted($model, $purchase));
+            return $purchase;
+        });
 
         return response()->json($purchase, 201);
     }
