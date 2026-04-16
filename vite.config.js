@@ -5,9 +5,21 @@ import laravel from 'laravel-vite-plugin';
 export default defineConfig({
     plugins: [
         laravel({
-            input: 'resources/js/main.tsx',
+            input: "resources/js/main.tsx",
             refresh: true,
         }),
         react(),
     ],
+    server: {
+        host: "0.0.0.0",
+        port: 5173,
+        origin: "http://localhost:5175",
+        cors: {
+            origin: "http://localhost:8088",
+        },
+        hmr: {
+            host: "localhost",
+            port: 5175,
+        },
+    },
 });
