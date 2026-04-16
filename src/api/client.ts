@@ -15,3 +15,16 @@ client.interceptors.request.use((config) => {
   }
   return config;
 });
+
+// On 401, clear local auth state and redirect to login
+client.interceptors.response.use(
+  (response) => response,
+  (error: unknown) => {
+    if (axios.isAxiosError(error) && error.response?.status === 401) {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem('bumpa_user');
+      window.location.replace('/login');
+    }
+    return Promise.reject(error);
+  },
+);
