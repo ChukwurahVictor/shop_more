@@ -1,6 +1,33 @@
 /** Named badge tiers as a union type — used across components and the API. */
 export type BadgeTier = 'Bronze' | 'Silver' | 'Gold' | 'Platinum';
 
+/** Authenticated user returned by login / register / me */
+export interface AuthUser {
+  id: number;
+  name: string;
+  email: string;
+}
+
+/** Payload for POST /api/auth/login */
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+/** Payload for POST /api/auth/register */
+export interface RegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  password_confirmation: string;
+}
+
+/** Response from login and register endpoints */
+export interface AuthResponse {
+  token: string;
+  user: AuthUser;
+}
+
 /** Shape returned by GET /api/users/{userId}/achievements */
 export interface AchievementsResponse {
   unlocked_achievements: string[];

@@ -1,12 +1,5 @@
-import axios from 'axios';
+import { client } from './client';
 import type { AchievementsResponse, PurchaseRequest } from '../types';
-
-const BASE_URL = 'http://localhost:8000';
-
-const client = axios.create({
-  baseURL: BASE_URL,
-  headers: { 'Content-Type': 'application/json' },
-});
 
 export async function fetchAchievements(userId: number | string): Promise<AchievementsResponse> {
   const { data } = await client.get<AchievementsResponse>(`/api/users/${userId}/achievements`);
