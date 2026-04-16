@@ -1,6 +1,7 @@
 <?php
 
 use Illuminate\Auth\AuthenticationException;
+use Illuminate\Database\QueryException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -25,7 +26,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 'status'  => 'failed',
                 'message' => 'Unauthenticated.',
                 'data'    => [],
-                'error'   => $e->getMessage(),
             ], 401);
         });
 
@@ -33,10 +33,18 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->render(function (ValidationException $e): JsonResponse {
             return response()->json([
                 'status'  => 'failed',
-                'message' => 'Validation failed.',
+                'message' => 'Validation failed: ' . implode(' ', array_merge(...array_values($e->errors()))),
                 'data'    => [],
-                'error'   => $e->errors(),
             ], 422);
+        });
+
+        // Database errors — never expose raw SQL to clients
+        $exceptions->render(function (QueryException $e): JsonResponse {
+            return response()->json([
+                'status'  => 'failed',
+                'message' => 'A database error occurred. Please try again later.',
+                'data'    => [],
+            ], 500);
         });
 
         // Generic HTTP errors (403, 404, 429, 500, etc.)
@@ -45,7 +53,6 @@ return Application::configure(basePath: dirname(__DIR__))
                 'status'  => 'failed',
                 'message' => $e->getMessage() ?: 'An error occurred.',
                 'data'    => [],
-                'error'   => class_basename($e),
             ], $e->getStatusCode());
         });
     })->create();
