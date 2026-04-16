@@ -198,6 +198,16 @@ Authorization: Bearer <token>
 
 ## API Reference
 
+All endpoints return a consistent JSON envelope:
+
+```json
+// Success
+{ "status": "success", "message": "...", "data": { ... } }
+
+// Failure
+{ "status": "failed", "message": "...", "data": [] }
+```
+
 ### Auth
 
 | Method | Endpoint | Auth | Description |
@@ -224,18 +234,26 @@ Returns the user's achievement and badge progress.
 
 ```json
 {
-  "unlocked_achievements": ["First Steps", "Regular Shopper"],
-  "next_available_achievements": ["Loyal Customer"],
-  "current_badge": "Silver",
-  "next_badge": "Gold",
-  "remaining_to_unlock_next_badge": 2
+  "status": "success",
+  "message": "Data retrieved successfully",
+  "data": {
+    "unlocked_achievements": ["First Steps", "Regular Shopper"],
+    "next_available_achievements": ["Loyal Customer"],
+    "current_badge": "Silver",
+    "next_badge": "Gold",
+    "remaining_to_unlock_next_badge": 2
+  }
 }
 ```
 
 **Response `404`** — user not found:
 
 ```json
-{ "message": "User not found." }
+{
+  "status": "failed",
+  "message": "User not found.",
+  "data": []
+}
 ```
 
 ---
@@ -258,18 +276,26 @@ Records a purchase and triggers achievement/badge evaluation.
 
 ```json
 {
-  "id": 12,
-  "user_id": 1,
-  "amount": "250.00",
-  "created_at": "2026-04-16T10:00:00.000000Z",
-  "updated_at": "2026-04-16T10:00:00.000000Z"
+  "status": "success",
+  "message": "Purchase recorded successfully.",
+  "data": {
+    "id": 12,
+    "user_id": 1,
+    "amount": "250.00",
+    "created_at": "2026-04-16T10:00:00.000000Z",
+    "updated_at": "2026-04-16T10:00:00.000000Z"
+  }
 }
 ```
 
 **Response `404`** — user not found:
 
 ```json
-{ "message": "User not found." }
+{
+  "status": "failed",
+  "message": "User not found.",
+  "data": []
+}
 ```
 
 ---
