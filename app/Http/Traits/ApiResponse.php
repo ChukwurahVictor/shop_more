@@ -22,18 +22,12 @@ trait ApiResponse
         return $this->success($data, $message, 201);
     }
 
-    protected function error(string $message = 'An error occurred', mixed $error = null, int $status = 400): JsonResponse
+    protected function error(string $message = 'An error occurred', int $status = 400): JsonResponse
     {
-        $body = [
+        return response()->json([
             'status'  => 'failed',
             'message' => $message,
             'data'    => [],
-        ];
-
-        if ($error !== null) {
-            $body['error'] = $error;
-        }
-
-        return response()->json($body, $status);
+        ], $status);
     }
 }

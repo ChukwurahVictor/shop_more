@@ -18,7 +18,7 @@ class PurchaseController extends Controller
         $model = User::find($user);
 
         if ($model === null) {
-            return $this->error('User not found.', null, 404);
+            return $this->error('User not found.', 404);
         }
 
         $validated = $request->validate([
