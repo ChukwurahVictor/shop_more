@@ -47,107 +47,144 @@ const RegisterPage: FC = () => {
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        {/* Brand */}
-        <div style={styles.brand}>
-          <div style={styles.logoMark}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-              <circle cx="14" cy="14" r="14" fill="#1d9e75" />
-              <path d="M8 14.5l4 4 8-8" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+      <div style={styles.page}>
+          <div style={styles.card}>
+              {/* Brand */}
+              <div style={styles.brand}>
+                  <div style={styles.logoMark}>
+                      <svg
+                          width="28"
+                          height="28"
+                          viewBox="0 0 28 28"
+                          fill="none"
+                          aria-hidden="true"
+                      >
+                          <circle cx="14" cy="14" r="14" fill="#1d9e75" />
+                          <path
+                              d="M8 14.5l4 4 8-8"
+                              stroke="#fff"
+                              strokeWidth="2.2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                          />
+                      </svg>
+                  </div>
+                  <span style={styles.brandName}>ShopMore Rewards</span>
+              </div>
+
+              <h1 style={styles.heading}>Create your account</h1>
+              <p style={styles.subheading}>
+                  Join and start earning achievements with every purchase.
+              </p>
+
+              <form onSubmit={handleSubmit} noValidate style={styles.form}>
+                  <div style={styles.fieldGroup}>
+                      <label htmlFor="name" style={styles.label}>
+                          Full name
+                      </label>
+                      <input
+                          id="name"
+                          type="text"
+                          autoComplete="name"
+                          required
+                          value={name}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setName(e.target.value)
+                          }
+                          style={styles.input}
+                          placeholder="Jane Doe"
+                          disabled={submitting}
+                      />
+                  </div>
+
+                  <div style={styles.fieldGroup}>
+                      <label htmlFor="email" style={styles.label}>
+                          Email address
+                      </label>
+                      <input
+                          id="email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          value={email}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setEmail(e.target.value)
+                          }
+                          style={styles.input}
+                          placeholder="you@example.com"
+                          disabled={submitting}
+                      />
+                  </div>
+
+                  <div style={styles.fieldGroup}>
+                      <label htmlFor="password" style={styles.label}>
+                          Password
+                      </label>
+                      <input
+                          id="password"
+                          type="password"
+                          autoComplete="new-password"
+                          required
+                          value={password}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setPassword(e.target.value)
+                          }
+                          style={styles.input}
+                          placeholder="Min. 8 characters"
+                          disabled={submitting}
+                      />
+                  </div>
+
+                  <div style={styles.fieldGroup}>
+                      <label htmlFor="password-confirm" style={styles.label}>
+                          Confirm password
+                      </label>
+                      <input
+                          id="password-confirm"
+                          type="password"
+                          autoComplete="new-password"
+                          required
+                          value={passwordConfirmation}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setPasswordConfirmation(e.target.value)
+                          }
+                          style={styles.input}
+                          placeholder="••••••••"
+                          disabled={submitting}
+                      />
+                  </div>
+
+                  {error && (
+                      <p
+                          style={styles.errorMsg}
+                          role="alert"
+                          aria-live="assertive"
+                      >
+                          {error}
+                      </p>
+                  )}
+
+                  <button
+                      type="submit"
+                      style={{
+                          ...styles.submitBtn,
+                          ...(submitting ? styles.submitBtnDisabled : {}),
+                      }}
+                      disabled={submitting}
+                      aria-busy={submitting}
+                  >
+                      {submitting ? "Creating account…" : "Create account"}
+                  </button>
+              </form>
+
+              <p style={styles.switchText}>
+                  Already have an account?{" "}
+                  <Link to="/login" style={styles.switchLink}>
+                      Sign in
+                  </Link>
+              </p>
           </div>
-          <span style={styles.brandName}>Bumpa Rewards</span>
-        </div>
-
-        <h1 style={styles.heading}>Create your account</h1>
-        <p style={styles.subheading}>Join and start earning achievements with every purchase.</p>
-
-        <form onSubmit={handleSubmit} noValidate style={styles.form}>
-          <div style={styles.fieldGroup}>
-            <label htmlFor="name" style={styles.label}>Full name</label>
-            <input
-              id="name"
-              type="text"
-              autoComplete="name"
-              required
-              value={name}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
-              style={styles.input}
-              placeholder="Jane Doe"
-              disabled={submitting}
-            />
-          </div>
-
-          <div style={styles.fieldGroup}>
-            <label htmlFor="email" style={styles.label}>Email address</label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-              style={styles.input}
-              placeholder="you@example.com"
-              disabled={submitting}
-            />
-          </div>
-
-          <div style={styles.fieldGroup}>
-            <label htmlFor="password" style={styles.label}>Password</label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={password}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-              style={styles.input}
-              placeholder="Min. 8 characters"
-              disabled={submitting}
-            />
-          </div>
-
-          <div style={styles.fieldGroup}>
-            <label htmlFor="password-confirm" style={styles.label}>Confirm password</label>
-            <input
-              id="password-confirm"
-              type="password"
-              autoComplete="new-password"
-              required
-              value={passwordConfirmation}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setPasswordConfirmation(e.target.value)}
-              style={styles.input}
-              placeholder="••••••••"
-              disabled={submitting}
-            />
-          </div>
-
-          {error && (
-            <p style={styles.errorMsg} role="alert" aria-live="assertive">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            style={{ ...styles.submitBtn, ...(submitting ? styles.submitBtnDisabled : {}) }}
-            disabled={submitting}
-            aria-busy={submitting}
-          >
-            {submitting ? 'Creating account…' : 'Create account'}
-          </button>
-        </form>
-
-        <p style={styles.switchText}>
-          Already have an account?{' '}
-          <Link to="/login" style={styles.switchLink}>
-            Sign in
-          </Link>
-        </p>
       </div>
-    </div>
   );
 };
 

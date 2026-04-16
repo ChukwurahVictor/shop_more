@@ -109,8 +109,8 @@ const Dashboard: FC = () => {
   const toNextTier         =  data?.remaining_to_unlock_next_badge;
 
   return (
-    <div style={S.page}>
-      <style>{`
+      <div style={S.page}>
+          <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .product-grid {
           display: grid;
@@ -131,169 +131,294 @@ const Dashboard: FC = () => {
         }
       `}</style>
 
-      {/* ── Sticky nav ── */}
-      <nav style={S.nav}>
-        <div style={S.navInner}>
-          <div style={S.navBrand}>
-            <svg width="26" height="26" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-              <circle cx="14" cy="14" r="14" fill="#1d9e75" />
-              <path d="M8 14.5l4 4 8-8" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-            <span style={S.navBrandName}>Bumpa Store</span>
-          </div>
-
-          <div style={S.navRight}>
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#888" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
-              <line x1="3" y1="6" x2="21" y2="6" />
-              <path d="M16 10a4 4 0 01-8 0" />
-            </svg>
-            <div style={S.navDivider} />
-            <div style={S.avatarChip}>
-              <div style={S.avatar}>{user!.name[0].toUpperCase()}</div>
-              <span style={S.avatarName}>{user!.name}</span>
-            </div>
-            <button
-              style={{ ...S.logoutBtn, ...(loggingOut ? S.logoutBtnDisabled : {}) }}
-              onClick={handleLogout}
-              disabled={loggingOut}
-              type="button"
-            >
-              {loggingOut ? 'Signing out…' : 'Sign out'}
-            </button>
-          </div>
-        </div>
-      </nav>
-
-      <main style={S.main}>
-
-        {/* ── Hero membership card ── */}
-        <section style={{ ...S.hero, background: heroGradient }} aria-label="Membership overview">
-          <div style={S.heroOverlay} />
-          <div className="hero-inner" style={S.heroInner}>
-
-            {/* Left: member info + stats */}
-            <div style={S.heroLeft}>
-              <div style={{ ...S.heroChip, borderColor: `${heroAccent}55`, background: `${heroAccent}22` }}>
-                <span style={{ ...S.heroChipDot, background: heroAccent }} />
-                <span style={{ color: heroAccent, fontSize: '10px', fontWeight: '700', letterSpacing: '0.8px' }}>
-                  BUMPA REWARDS MEMBER
-                </span>
-              </div>
-              <h1 style={S.heroGreeting}>Welcome back, {firstName}!</h1>
-              <p style={S.heroTierLabel}>{tierLabel}</p>
-
-              <div style={S.heroStats}>
-                <div style={S.statItem}>
-                  <span style={S.statValue}>{loyaltyPoints.toLocaleString()}</span>
-                  <span style={S.statLabel}>Loyalty Points</span>
-                </div>
-                <div style={S.statSep} />
-                <div style={S.statItem}>
-                  <span style={S.statValue}>{milestonesUnlocked} / 5</span>
-                  <span style={S.statLabel}>Milestones</span>
-                </div>
-                <div style={S.statSep} />
-                <div style={S.statItem}>
-                  <span style={S.statValue}>
-                    {data ? (toNextTier === 0 ? '🏆' : (toNextTier ?? '—')) : '—'}
-                  </span>
-                  <span style={S.statLabel}>To Next Tier</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right: tier badge */}
-            <div className="hero-badge-col" style={S.heroBadgeCol} aria-hidden="true">
-              <div style={{ ...S.heroBadgeRing, borderColor: `${heroAccent}66` }}>
-                <div style={{ ...S.heroBadgeCircle, background: `${heroAccent}22` }}>
-                  <span style={{ ...S.heroBadgeLetter, color: heroAccent }}>
-                    {data?.current_badge ? data.current_badge[0] : '?'}
-                  </span>
-                </div>
-              </div>
-              <span style={{ ...S.heroBadgeName, color: heroAccent }}>
-                {data?.current_badge ?? 'New Member'}
-              </span>
-            </div>
-          </div>
-        </section>
-
-        {/* ── Loading / Error ── */}
-        {isLoading && <SkeletonLoader />}
-        {isError && !isLoading && <ErrorState onRetry={refetch} />}
-
-        {/* ── Content ── */}
-        {!isLoading && !isError && data && (
-          <>
-            {/* Shop & Earn */}
-            <section aria-label="Product shop">
-              <div style={S.sectionHeader}>
-                <div>
-                  <h2 style={S.sectionTitle}>Shop & Earn Rewards</h2>
-                  <p style={S.sectionSub}>
-                    Every purchase earns loyalty points and unlocks milestones toward your next badge.
-                  </p>
-                </div>
-                <div style={S.earnPill}>
-                  <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                    <circle cx="8" cy="8" r="7" fill="#1d9e75" />
-                    <path d="M5 8.5l2.5 2.5L11 5.5" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  Earn 100 pts per purchase
-                </div>
-              </div>
-
-              {purchaseError && (
-                <p style={S.errorBanner} role="alert" aria-live="assertive">{purchaseError}</p>
-              )}
-
-              <div className="product-grid">
-                {PRODUCTS.map((product) => (
-                  <div key={product.id} className="product-card-wrap">
-                    <ProductCard
-                      product={product}
-                      purchasing={purchasingId === product.id}
-                      justPurchased={recentlyPurchased.has(product.id)}
-                      onBuy={() => { void handleBuy(product); }}
-                    />
+          {/* ── Sticky nav ── */}
+          <nav style={S.nav}>
+              <div style={S.navInner}>
+                  <div style={S.navBrand}>
+                      <svg
+                          width="26"
+                          height="26"
+                          viewBox="0 0 28 28"
+                          fill="none"
+                          aria-hidden="true"
+                      >
+                          <circle cx="14" cy="14" r="14" fill="#1d9e75" />
+                          <path
+                              d="M8 14.5l4 4 8-8"
+                              stroke="#fff"
+                              strokeWidth="2.2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                          />
+                      </svg>
+                      <span style={S.navBrandName}>ShopMore</span>
                   </div>
-                ))}
-              </div>
-            </section>
 
-            {/* Progress + Journey row */}
-            <div className="progress-row">
-              <section style={S.card} aria-label="Progress to next badge">
-                <h2 style={S.cardTitle}>Progress to Next Tier</h2>
-                <ProgressBar
-                  current={data.unlocked_achievements.length}
-                  remaining={data.remaining_to_unlock_next_badge}
-                  nextBadge={data.next_badge}
-                  currentBadge={data.current_badge}
-                />
-              </section>
-              <section style={S.card} aria-label="Tier journey">
-                <h2 style={S.cardTitle}>Your Tier Journey</h2>
-                <BadgeJourney currentBadge={data.current_badge} />
-              </section>
-            </div>
-
-            {/* Milestones */}
-            <section style={S.card} aria-label="Milestones">
-              <div style={S.milestoneHeader}>
-                <h2 style={S.cardTitle}>Your Milestones</h2>
-                <span style={S.milestonePill}>{milestonesUnlocked} of 5 unlocked</span>
+                  <div style={S.navRight}>
+                      <svg
+                          width="22"
+                          height="22"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="#888"
+                          strokeWidth="1.8"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden="true"
+                      >
+                          <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z" />
+                          <line x1="3" y1="6" x2="21" y2="6" />
+                          <path d="M16 10a4 4 0 01-8 0" />
+                      </svg>
+                      <div style={S.navDivider} />
+                      <div style={S.avatarChip}>
+                          <div style={S.avatar}>
+                              {user!.name[0].toUpperCase()}
+                          </div>
+                          <span style={S.avatarName}>{user!.name}</span>
+                      </div>
+                      <button
+                          style={{
+                              ...S.logoutBtn,
+                              ...(loggingOut ? S.logoutBtnDisabled : {}),
+                          }}
+                          onClick={handleLogout}
+                          disabled={loggingOut}
+                          type="button"
+                      >
+                          {loggingOut ? "Signing out…" : "Sign out"}
+                      </button>
+                  </div>
               </div>
-              <AchievementGrid
-                unlockedAchievements={data.unlocked_achievements}
-                nextAvailableAchievements={data.next_available_achievements}
-              />
-            </section>
-          </>
-        )}
-      </main>
-    </div>
+          </nav>
+
+          <main style={S.main}>
+              {/* ── Hero membership card ── */}
+              <section
+                  style={{ ...S.hero, background: heroGradient }}
+                  aria-label="Membership overview"
+              >
+                  <div style={S.heroOverlay} />
+                  <div className="hero-inner" style={S.heroInner}>
+                      {/* Left: member info + stats */}
+                      <div style={S.heroLeft}>
+                          <div
+                              style={{
+                                  ...S.heroChip,
+                                  borderColor: `${heroAccent}55`,
+                                  background: `${heroAccent}22`,
+                              }}
+                          >
+                              <span
+                                  style={{
+                                      ...S.heroChipDot,
+                                      background: heroAccent,
+                                  }}
+                              />
+                              <span
+                                  style={{
+                                      color: heroAccent,
+                                      fontSize: "10px",
+                                      fontWeight: "700",
+                                      letterSpacing: "0.8px",
+                                  }}
+                              >
+                                  SHOPMORE REWARDS MEMBER
+                              </span>
+                          </div>
+                          <h1 style={S.heroGreeting}>
+                              Welcome back, {firstName}!
+                          </h1>
+                          <p style={S.heroTierLabel}>{tierLabel}</p>
+
+                          <div style={S.heroStats}>
+                              <div style={S.statItem}>
+                                  <span style={S.statValue}>
+                                      {loyaltyPoints.toLocaleString()}
+                                  </span>
+                                  <span style={S.statLabel}>
+                                      Loyalty Points
+                                  </span>
+                              </div>
+                              <div style={S.statSep} />
+                              <div style={S.statItem}>
+                                  <span style={S.statValue}>
+                                      {milestonesUnlocked} / 5
+                                  </span>
+                                  <span style={S.statLabel}>Milestones</span>
+                              </div>
+                              <div style={S.statSep} />
+                              <div style={S.statItem}>
+                                  <span style={S.statValue}>
+                                      {data
+                                          ? toNextTier === 0
+                                              ? "🏆"
+                                              : (toNextTier ?? "—")
+                                          : "—"}
+                                  </span>
+                                  <span style={S.statLabel}>To Next Tier</span>
+                              </div>
+                          </div>
+                      </div>
+
+                      {/* Right: tier badge */}
+                      <div
+                          className="hero-badge-col"
+                          style={S.heroBadgeCol}
+                          aria-hidden="true"
+                      >
+                          <div
+                              style={{
+                                  ...S.heroBadgeRing,
+                                  borderColor: `${heroAccent}66`,
+                              }}
+                          >
+                              <div
+                                  style={{
+                                      ...S.heroBadgeCircle,
+                                      background: `${heroAccent}22`,
+                                  }}
+                              >
+                                  <span
+                                      style={{
+                                          ...S.heroBadgeLetter,
+                                          color: heroAccent,
+                                      }}
+                                  >
+                                      {data?.current_badge
+                                          ? data.current_badge[0]
+                                          : "?"}
+                                  </span>
+                              </div>
+                          </div>
+                          <span
+                              style={{ ...S.heroBadgeName, color: heroAccent }}
+                          >
+                              {data?.current_badge ?? "New Member"}
+                          </span>
+                      </div>
+                  </div>
+              </section>
+
+              {/* ── Loading / Error ── */}
+              {isLoading && <SkeletonLoader />}
+              {isError && !isLoading && <ErrorState onRetry={refetch} />}
+
+              {/* ── Content ── */}
+              {!isLoading && !isError && data && (
+                  <>
+                      {/* Shop & Earn */}
+                      <section aria-label="Product shop">
+                          <div style={S.sectionHeader}>
+                              <div>
+                                  <h2 style={S.sectionTitle}>
+                                      Shop & Earn Rewards
+                                  </h2>
+                                  <p style={S.sectionSub}>
+                                      Every purchase earns loyalty points and
+                                      unlocks milestones toward your next badge.
+                                  </p>
+                              </div>
+                              <div style={S.earnPill}>
+                                  <svg
+                                      width="13"
+                                      height="13"
+                                      viewBox="0 0 16 16"
+                                      fill="none"
+                                      aria-hidden="true"
+                                  >
+                                      <circle
+                                          cx="8"
+                                          cy="8"
+                                          r="7"
+                                          fill="#1d9e75"
+                                      />
+                                      <path
+                                          d="M5 8.5l2.5 2.5L11 5.5"
+                                          stroke="#fff"
+                                          strokeWidth="1.6"
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                      />
+                                  </svg>
+                                  Earn 100 pts per purchase
+                              </div>
+                          </div>
+
+                          {purchaseError && (
+                              <p
+                                  style={S.errorBanner}
+                                  role="alert"
+                                  aria-live="assertive"
+                              >
+                                  {purchaseError}
+                              </p>
+                          )}
+
+                          <div className="product-grid">
+                              {PRODUCTS.map((product) => (
+                                  <div
+                                      key={product.id}
+                                      className="product-card-wrap"
+                                  >
+                                      <ProductCard
+                                          product={product}
+                                          purchasing={
+                                              purchasingId === product.id
+                                          }
+                                          justPurchased={recentlyPurchased.has(
+                                              product.id,
+                                          )}
+                                          onBuy={() => {
+                                              void handleBuy(product);
+                                          }}
+                                      />
+                                  </div>
+                              ))}
+                          </div>
+                      </section>
+
+                      {/* Progress + Journey row */}
+                      <div className="progress-row">
+                          <section
+                              style={S.card}
+                              aria-label="Progress to next badge"
+                          >
+                              <h2 style={S.cardTitle}>Progress to Next Tier</h2>
+                              <ProgressBar
+                                  current={data.unlocked_achievements.length}
+                                  remaining={
+                                      data.remaining_to_unlock_next_badge
+                                  }
+                                  nextBadge={data.next_badge}
+                                  currentBadge={data.current_badge}
+                              />
+                          </section>
+                          <section style={S.card} aria-label="Tier journey">
+                              <h2 style={S.cardTitle}>Your Tier Journey</h2>
+                              <BadgeJourney currentBadge={data.current_badge} />
+                          </section>
+                      </div>
+
+                      {/* Milestones */}
+                      <section style={S.card} aria-label="Milestones">
+                          <div style={S.milestoneHeader}>
+                              <h2 style={S.cardTitle}>Your Milestones</h2>
+                              <span style={S.milestonePill}>
+                                  {milestonesUnlocked} of 5 unlocked
+                              </span>
+                          </div>
+                          <AchievementGrid
+                              unlockedAchievements={data.unlocked_achievements}
+                              nextAvailableAchievements={
+                                  data.next_available_achievements
+                              }
+                          />
+                      </section>
+                  </>
+              )}
+          </main>
+      </div>
   );
 };
 

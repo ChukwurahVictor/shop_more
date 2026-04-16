@@ -19,7 +19,8 @@ class DatabaseSeeder extends Seeder
 
         // Known test user for manual/frontend testing
         $testUser = User::firstOrCreate(
-            ['email' => 'test@bumpa.com'],
+['email' => 'test@shopmore.com'],
+
             [
                 'name'     => 'Test User',
                 'password' => Hash::make('password'),

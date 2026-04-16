@@ -11,7 +11,7 @@ import { login as apiLogin, logout as apiLogout, register as apiRegister } from 
 import { TOKEN_KEY } from '../api/client';
 import type { AuthUser, LoginPayload, RegisterPayload } from '../types';
 
-const USER_KEY = 'bumpa_user';
+const USER_KEY = "shopmore_user";
 
 interface AuthContextValue {
   user: AuthUser | null;

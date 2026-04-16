@@ -1,10 +1,10 @@
 import axios from 'axios';
 
-export const TOKEN_KEY = 'bumpa_token';
+export const TOKEN_KEY = "shopmore_token";
 
 export const client = axios.create({
-  baseURL: 'http://localhost:8000',
-  headers: { 'Content-Type': 'application/json' },
+    baseURL: "http://localhost:8088",
+    headers: { "Content-Type": "application/json" },
 });
 
 // Attach Bearer token from localStorage on every request
@@ -22,7 +22,7 @@ client.interceptors.response.use(
   (error: unknown) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem('bumpa_user');
+      localStorage.removeItem("shopmore_user");
       window.location.replace('/login');
     }
     return Promise.reject(error);

@@ -45,77 +45,106 @@ const LoginPage: FC = () => {
   }
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        {/* Brand */}
-        <div style={styles.brand}>
-          <div style={styles.logoMark}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden="true">
-              <circle cx="14" cy="14" r="14" fill="#1d9e75" />
-              <path d="M8 14.5l4 4 8-8" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+      <div style={styles.page}>
+          <div style={styles.card}>
+              {/* Brand */}
+              <div style={styles.brand}>
+                  <div style={styles.logoMark}>
+                      <svg
+                          width="28"
+                          height="28"
+                          viewBox="0 0 28 28"
+                          fill="none"
+                          aria-hidden="true"
+                      >
+                          <circle cx="14" cy="14" r="14" fill="#1d9e75" />
+                          <path
+                              d="M8 14.5l4 4 8-8"
+                              stroke="#fff"
+                              strokeWidth="2.2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                          />
+                      </svg>
+                  </div>
+                  <span style={styles.brandName}>ShopMore Rewards</span>
+              </div>
+
+              <h1 style={styles.heading}>Welcome back</h1>
+              <p style={styles.subheading}>
+                  Sign in to view your achievements and loyalty progress.
+              </p>
+
+              <form onSubmit={handleSubmit} noValidate style={styles.form}>
+                  <div style={styles.fieldGroup}>
+                      <label htmlFor="email" style={styles.label}>
+                          Email address
+                      </label>
+                      <input
+                          id="email"
+                          type="email"
+                          autoComplete="email"
+                          required
+                          value={email}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setEmail(e.target.value)
+                          }
+                          style={styles.input}
+                          placeholder="you@example.com"
+                          disabled={submitting}
+                      />
+                  </div>
+
+                  <div style={styles.fieldGroup}>
+                      <label htmlFor="password" style={styles.label}>
+                          Password
+                      </label>
+                      <input
+                          id="password"
+                          type="password"
+                          autoComplete="current-password"
+                          required
+                          value={password}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                              setPassword(e.target.value)
+                          }
+                          style={styles.input}
+                          placeholder="••••••••"
+                          disabled={submitting}
+                      />
+                  </div>
+
+                  {error && (
+                      <p
+                          style={styles.errorMsg}
+                          role="alert"
+                          aria-live="assertive"
+                      >
+                          {error}
+                      </p>
+                  )}
+
+                  <button
+                      type="submit"
+                      style={{
+                          ...styles.submitBtn,
+                          ...(submitting ? styles.submitBtnDisabled : {}),
+                      }}
+                      disabled={submitting}
+                      aria-busy={submitting}
+                  >
+                      {submitting ? "Signing in…" : "Sign in"}
+                  </button>
+              </form>
+
+              <p style={styles.switchText}>
+                  Don't have an account?{" "}
+                  <Link to="/register" style={styles.switchLink}>
+                      Create one
+                  </Link>
+              </p>
           </div>
-          <span style={styles.brandName}>Bumpa Rewards</span>
-        </div>
-
-        <h1 style={styles.heading}>Welcome back</h1>
-        <p style={styles.subheading}>Sign in to view your achievements and loyalty progress.</p>
-
-        <form onSubmit={handleSubmit} noValidate style={styles.form}>
-          <div style={styles.fieldGroup}>
-            <label htmlFor="email" style={styles.label}>Email address</label>
-            <input
-              id="email"
-              type="email"
-              autoComplete="email"
-              required
-              value={email}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
-              style={styles.input}
-              placeholder="you@example.com"
-              disabled={submitting}
-            />
-          </div>
-
-          <div style={styles.fieldGroup}>
-            <label htmlFor="password" style={styles.label}>Password</label>
-            <input
-              id="password"
-              type="password"
-              autoComplete="current-password"
-              required
-              value={password}
-              onChange={(e: ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
-              style={styles.input}
-              placeholder="••••••••"
-              disabled={submitting}
-            />
-          </div>
-
-          {error && (
-            <p style={styles.errorMsg} role="alert" aria-live="assertive">
-              {error}
-            </p>
-          )}
-
-          <button
-            type="submit"
-            style={{ ...styles.submitBtn, ...(submitting ? styles.submitBtnDisabled : {}) }}
-            disabled={submitting}
-            aria-busy={submitting}
-          >
-            {submitting ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
-
-        <p style={styles.switchText}>
-          Don't have an account?{' '}
-          <Link to="/register" style={styles.switchLink}>
-            Create one
-          </Link>
-        </p>
       </div>
-    </div>
   );
 };
 
