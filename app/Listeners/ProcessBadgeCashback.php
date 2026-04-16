@@ -5,24 +5,19 @@ declare(strict_types=1);
 namespace App\Listeners;
 
 use App\Events\BadgeUnlocked;
-use Illuminate\Log\LogManager;
+use App\Services\CashbackService;
+
 
 class ProcessBadgeCashback
 {
     public function __construct(
-        private readonly LogManager $logManager,
+private readonlyCashbackService $cashbackService,
+
     ) {}
 
     public function handle(BadgeUnlocked $event): void
     {
-        $this->logManager->channel('payments')->info('Cashback initiated', [
-            'user_id'    => $event->user->id,
-            'badge_name' => $event->badgeName,
-            'amount'     => 300,
-            'currency'   => 'NGN',
-            'timestamp'  => now()->toIso8601String(),
-        ]);
+$this->cashbackService->issueBadgeCashback($event->user, $event->badgeName);
 
-        // TODO: replace with real payment gateway call e.g. Paystack
     }
 }
