@@ -1,0 +1,42 @@
+# Dependencies (installed inside containers)
+vendor/
+node_modules/
+
+# Git history
+.git/
+.gitignore
+.gitattributes
+
+# Environment files (injected at runtime, never baked into images)
+.env
+.env.*
+!.env.example
+
+# Dev/test artefacts
+tests/
+*.test.*
+coverage/
+.phpunit.result.cache
+
+# Editor / OS noise
+.idea/
+.vscode/
+*.DS_Store
+*.swp
+*.swo
+
+# Docker files themselves (avoid recursive context bloat)
+docker/
+docker-compose*.yml
+Dockerfile*
+
+# Build output (re-generated inside the image)
+public/build/
+public/hot
+
+# Logs
+storage/logs/*.log
+
+# Documentation
+*.md
+LICENSE
