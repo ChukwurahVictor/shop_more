@@ -1,142 +1,165 @@
-# Bumpa Assessment — Backend API
+# ShopMore — Loyalty & Rewards Platform
 
-A Laravel 11 REST API that tracks user purchases and automatically awards achievements and badge upgrades as spending milestones are reached. Authentication is handled with Laravel Sanctum.
+A fullstack Laravel 11 + React 19 application that tracks user purchases and automatically awards achievements and badge upgrades as spending milestones are reached. Badge upgrades trigger a ₦300 cashback payment via a pluggable payment provider.
 
 ---
 
 ## Table of Contents
 
-- [Requirements](#requirements)
 - [Tech Stack](#tech-stack)
-- [Installation](#installation)
+- [Quick Start — Docker (recommended)](#quick-start--docker-recommended)
+- [Quick Start — Local](#quick-start--local)
 - [Environment Setup](#environment-setup)
-- [Database Setup](#database-setup)
-- [Running the Server](#running-the-server)
 - [Running Tests](#running-tests)
+- [Seed Accounts](#seed-accounts)
 - [Authentication Flow](#authentication-flow)
 - [API Reference](#api-reference)
 - [Achievement & Badge Logic](#achievement--badge-logic)
+- [Cashback System](#cashback-system)
 - [Project Structure](#project-structure)
-
----
-
-## Requirements
-
-| Tool | Minimum Version |
-|------|----------------|
-| PHP  | 8.2+           |
-| Composer | 2.x       |
-| SQLite | 3.x (bundled with PHP) |
-
-> **macOS (Homebrew):** If your system PHP is older, use the Homebrew version:
-> ```bash
-> /opt/homebrew/bin/php --version
-> ```
 
 ---
 
 ## Tech Stack
 
-- **Framework:** Laravel 11
-- **Authentication:** Laravel Sanctum (token-based)
-- **Database:** SQLite (default) — swappable to MySQL/PostgreSQL via `.env`
-- **Testing:** Pest v3 + pest-plugin-laravel
+| Layer | Technology |
+|-------|------------|
+| Backend | Laravel 11, PHP 8.4 |
+| Frontend | React 19, TypeScript, Vite 8 |
+| Auth | Laravel Sanctum (token-based) |
+| Database | SQLite (default) — swappable to MySQL/PostgreSQL |
+| Testing | Pest v3 + pest-plugin-laravel |
+| Containerisation | Docker + Docker Compose |
 
 ---
 
-## Installation
+## Quick Start — Docker (recommended)
+
+### Prerequisites
+
+- Docker Desktop running
+
+### Start
 
 ```bash
-# 1. Clone the repository
-git clone <repo-url> bumpa-backend
-cd bumpa-backend
-
-# 2. Install PHP dependencies
-composer install
+docker compose up
 ```
+
+On first run Docker will:
+1. Build the PHP image and install Composer dependencies
+2. Run all migrations automatically
+3. Seed the database with test users
+4. Start the Vite dev server with HMR
+
+| Service | URL |
+|---------|-----|
+| **React frontend / Laravel** | http://localhost:8088 |
+| **Vite HMR (asset server)** | http://localhost:5175 |
+
+### Stop
+
+```bash
+docker compose down
+```
+
+### Reset database
+
+```bash
+docker compose down -v   # removes SQLite volume
+docker compose up
+```
+
+---
+
+## Quick Start — Local
+
+### Prerequisites
+
+| Tool | Minimum Version |
+|------|----------------|
+| PHP | 8.4+ |
+| Composer | 2.x |
+| Node.js | 20+ |
+| npm | 10+ |
+
+> **macOS:** If your system PHP is older, use Homebrew:
+> ```bash
+> /opt/homebrew/bin/php --version
+> ```
+
+### Backend
+
+```bash
+# 1. Install PHP dependencies
+composer install
+
+# 2. Copy environment file and generate key
+cp .env.example .env
+php artisan key:generate
+
+# 3. Run migrations and seed
+php artisan migrate
+php artisan db:seed
+
+# 4. Start Laravel server
+/opt/homebrew/bin/php artisan serve
+# → http://127.0.0.1:8000
+```
+
+### Frontend
+
+```bash
+# In a separate terminal
+npm install
+npm run dev
+# → http://localhost:5173
+```
+
+> When running locally, the React frontend is served by Vite and communicates with Laravel at `http://localhost:8000`.
 
 ---
 
 ## Environment Setup
 
-```bash
-# Copy the example env file
-cp .env.example .env
-
-# Generate the application key
-php artisan key:generate
-```
-
-The default `.env` uses **SQLite** — no database server required. The database file is created automatically at `database/database.sqlite`.
+The default `.env` uses **SQLite** — no database server required.
 
 ### Switching to MySQL / PostgreSQL
-
-Update the following values in `.env`:
 
 ```env
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
-DB_DATABASE=bumpa
+DB_DATABASE=shopmore
 DB_USERNAME=root
 DB_PASSWORD=secret
 ```
 
 ---
 
-## Database Setup
-
-```bash
-# Run all migrations
-php artisan migrate
-
-# Seed the database with test users and data
-php artisan db:seed
-```
-
-The seeder creates the following records:
-
-| Email | Password | Purchases | Achievements | Badge |
-|-------|----------|-----------|--------------|-------|
-| `test@bumpa.com` | `password` | 0 | none | Bronze |
-| _(factory)_ | _(random)_ | 1 | First Steps | Bronze |
-| _(factory)_ | _(random)_ | 5 | First Steps, Regular Shopper | Silver |
-| _(factory)_ | _(random)_ | 10 | + Loyal Customer | Silver |
-| _(factory)_ | _(random)_ | 20 | + Super Fan | Gold |
-| _(factory)_ | _(random)_ | 50 | + Legend | Platinum |
-
-Use `test@bumpa.com` / `password` to log in immediately without registering.
-
----
-
-## Running the Server
-
-```bash
-php artisan serve
-```
-
-The API will be available at **`http://127.0.0.1:8000`**.
-
-> **macOS with XAMPP / Herd:** If your default `php` points to an older version, prefix commands with the Homebrew PHP path:
-> ```bash
-> /opt/homebrew/bin/php artisan serve
-> ```
-
----
-
 ## Running Tests
 
 ```bash
+# Local
 php artisan test
+
+# Inside Docker
+docker compose exec app php artisan test
 ```
 
-Or using Pest directly:
+Tests use an **in-memory SQLite database** and reset between each test.
 
-```bash
-./vendor/bin/pest
-```
+---
 
-Tests use an **in-memory SQLite database** and reset between each test — no separate test database setup needed.
+## Seed Accounts
+
+| Email | Password | Purchases | Badge |
+|-------|----------|-----------|-------|
+| `test@shopmore.com` | `password` | 0 | Bronze |
+| _(factory)_ | _(random)_ | 1 | Bronze |
+| _(factory)_ | _(random)_ | 5 | Silver |
+| _(factory)_ | _(random)_ | 10 | Silver |
+| _(factory)_ | _(random)_ | 20 | Gold |
+| _(factory)_ | _(random)_ | 50 | Platinum |
 
 ---
 
@@ -144,7 +167,7 @@ Tests use an **in-memory SQLite database** and reset between each test — no se
 
 All API routes (except `/auth/register` and `/auth/login`) require a Bearer token.
 
-### 1. Register
+### Register
 
 ```http
 POST /api/auth/register
@@ -158,14 +181,14 @@ Content-Type: application/json
 }
 ```
 
-### 2. Login
+### Login
 
 ```http
 POST /api/auth/login
 Content-Type: application/json
 
 {
-  "email": "test@bumpa.com",
+  "email": "test@shopmore.com",
   "password": "password"
 }
 ```
@@ -175,19 +198,17 @@ Content-Type: application/json
 ```json
 {
   "token": "1|abc123...",
-  "user": { "id": 1, "name": "Test User", "email": "test@bumpa.com" }
+  "user": { "id": 1, "name": "Test User", "email": "test@shopmore.com" }
 }
 ```
 
-### 3. Use the token
-
-Include the token in the `Authorization` header for all subsequent requests:
+Include the token in all subsequent requests:
 
 ```
 Authorization: Bearer 1|abc123...
 ```
 
-### 4. Logout
+### Logout
 
 ```http
 POST /api/auth/logout
@@ -201,11 +222,8 @@ Authorization: Bearer <token>
 All endpoints return a consistent JSON envelope:
 
 ```json
-// Success
 { "status": "success", "message": "...", "data": { ... } }
-
-// Failure
-{ "status": "failed", "message": "...", "data": [] }
+{ "status": "failed",  "message": "...", "data": [] }
 ```
 
 ### Auth
@@ -228,8 +246,6 @@ All endpoints return a consistent JSON envelope:
 
 ### GET `/api/users/{id}/achievements`
 
-Returns the user's achievement and badge progress.
-
 **Response `200`:**
 
 ```json
@@ -246,21 +262,9 @@ Returns the user's achievement and badge progress.
 }
 ```
 
-**Response `404`** — user not found:
-
-```json
-{
-  "status": "failed",
-  "message": "User not found.",
-  "data": []
-}
-```
-
 ---
 
 ### POST `/api/users/{id}/purchases`
-
-Records a purchase and triggers achievement/badge evaluation.
 
 **Request body:**
 
@@ -282,19 +286,8 @@ Records a purchase and triggers achievement/badge evaluation.
     "id": 12,
     "user_id": 1,
     "amount": "250.00",
-    "created_at": "2026-04-16T10:00:00.000000Z",
-    "updated_at": "2026-04-16T10:00:00.000000Z"
+    "created_at": "2026-04-16T10:00:00.000000Z"
   }
-}
-```
-
-**Response `404`** — user not found:
-
-```json
-{
-  "status": "failed",
-  "message": "User not found.",
-  "data": []
 }
 ```
 
@@ -321,7 +314,57 @@ Records a purchase and triggers achievement/badge evaluation.
 | Gold | 4 |
 | Platinum | 5 |
 
-Achievements and badges are evaluated automatically when a purchase is recorded. The system is idempotent — re-evaluating an already-achieved milestone will not create duplicate records or fire duplicate events.
+Achievements and badges are evaluated automatically when a purchase is recorded. The system is idempotent — re-evaluating an already-achieved milestone will not create duplicates or fire duplicate events.
+
+---
+
+## Cashback System
+
+When a user unlocks a new badge tier, a **₦300 cashback** is automatically triggered via the `BadgeUnlocked` event.
+
+### Flow
+
+```
+POST /api/users/{id}/purchases
+  → PurchaseCompleted event
+    → AwardAchievementsAndBadges listener
+      → BadgeUnlocked event (if badge upgraded)
+        → ProcessBadgeCashback listener
+          → CashbackService::issueBadgeCashback()
+            → PaymentProviderInterface::disburse()
+```
+
+### Payment Provider
+
+The payment provider is bound via `PaymentProviderInterface` in `AppServiceProvider`. The current implementation is `MockPaymentProvider`, which simulates a successful disbursement and logs to `storage/logs/payments.log`.
+
+**To swap in a real provider (e.g. Paystack):**
+
+1. Create `app/Services/PaystackPaymentProvider.php` implementing `PaymentProviderInterface`
+2. Update the binding in `AppServiceProvider`:
+
+```php
+$this->app->bind(PaymentProviderInterface::class, PaystackPaymentProvider::class);
+```
+
+### Cashback Log Sample
+
+```
+[2026-04-16 18:00:00] local.INFO: Cashback initiated {
+  "user_id": 1, "user_email": "test@shopmore.com",
+  "badge": "Silver", "amount_ngn": 300,
+  "reference": "cashback-1-silver-20260416180000"
+}
+[2026-04-16 18:00:00] local.INFO: [MockPaymentProvider] Disbursement processed {
+  "status": "success", "message": "Transfer queued successfully. (mock)"
+}
+```
+
+View live cashback logs in Docker:
+
+```bash
+docker compose exec app tail -f storage/logs/payments.log
+```
 
 ---
 
@@ -338,77 +381,40 @@ Achievements and badges are evaluated automatically when a purchase is recorded.
 
 ```
 app/
-├── Events/               # AchievementUnlocked, BadgeUnlocked, PurchaseCompleted
-├── Http/Controllers/     # AuthController, AchievementController, PurchaseController
-├── Listeners/            # AwardAchievementsAndBadges, ProcessBadgeCashback
-├── Models/               # User, Purchase, UserAchievement, UserBadge
-├── Providers/            # EventServiceProvider
-└── Services/             # AchievementService, BadgeService
-database/
-├── migrations/           # Schema migrations (incl. soft deletes)
-└── seeders/              # DatabaseSeeder with test users
-routes/
-└── api.php               # All API routes
-tests/
-└── Feature/
-    └── AchievementTest.php  # 8 Pest feature tests
+├── Contracts/
+│   └── PaymentProviderInterface.php   # Payment provider contract
+├── Events/
+│   ├── AchievementUnlocked.php
+│   ├── BadgeUnlocked.php
+│   └── PurchaseCompleted.php
+├── Http/Controllers/
+│   ├── AuthController.php
+│   ├── AchievementController.php
+│   └── PurchaseController.php
+├── Listeners/
+│   ├── AwardAchievementsAndBadges.php
+│   └── ProcessBadgeCashback.php       # Triggers cashback on badge unlock
+├── Models/
+│   ├── User.php, Purchase.php
+│   ├── UserAchievement.php, UserBadge.php
+├── Providers/
+│   ├── AppServiceProvider.php         # Binds PaymentProviderInterface
+│   └── EventServiceProvider.php
+└── Services/
+    ├── AchievementService.php
+    ├── BadgeService.php
+    ├── CashbackService.php            # Orchestrates cashback payments
+    └── MockPaymentProvider.php        # Simulated payment provider
+resources/js/
+├── api/                               # Axios client + auth/achievements API
+├── components/                        # ProtectedRoute, UI components
+├── context/AuthContext.tsx            # Auth state management
+├── pages/
+│   ├── Dashboard.tsx                  # Loyalty dashboard
+│   ├── LoginPage.tsx
+│   └── RegisterPage.tsx
+└── types/                             # TypeScript types
+docker/
+├── entrypoint.sh                      # Runs migrations + seeds on startup
+└── nginx/default.conf                 # Production nginx config
 ```
-
-
-## About Laravel
-
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
-
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
-
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
-
-## Learning Laravel
-
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
-
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-## Laravel Sponsors
-
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
-
-### Premium Partners
-
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
