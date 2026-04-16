@@ -23,7 +23,7 @@ class AuthController extends Controller
         $user  = User::create($validated);
         $token = $user->createToken('api')->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $user], 201);
+        return $this->created(['token' => $token, 'user' => $user], 'Registration successful.');
     }
 
     public function login(Request $request): JsonResponse
@@ -43,18 +43,18 @@ class AuthController extends Controller
 
         $token = $user->createToken('api')->plainTextToken;
 
-        return response()->json(['token' => $token, 'user' => $user]);
+        return $this->success(['token' => $token, 'user' => $user], 'Login successful.');
     }
 
     public function logout(Request $request): JsonResponse
     {
         $request->user()->currentAccessToken()->delete();
 
-        return response()->json(['message' => 'Logged out successfully.']);
+        return $this->success([], 'Logged out successfully.');
     }
 
     public function me(Request $request): JsonResponse
     {
-        return response()->json($request->user());
+        return $this->success($request->user());
     }
 }

@@ -21,10 +21,10 @@ class AchievementController extends Controller
         $model = User::find($user);
 
         if ($model === null) {
-            return response()->json(['message' => 'User not found.'], 404);
+            return $this->error('User not found.', null, 404);
         }
 
-        return response()->json([
+        return $this->success([
             'unlocked_achievements'          => $this->achievementService->getUnlockedAchievements($model),
             'next_available_achievements'    => $this->achievementService->getNextAchievements($model),
             'current_badge'                  => $this->badgeService->currentBadge($model),

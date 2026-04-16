@@ -18,7 +18,7 @@ class PurchaseController extends Controller
         $model = User::find($user);
 
         if ($model === null) {
-            return response()->json(['message' => 'User not found.'], 404);
+            return $this->error('User not found.', null, 404);
         }
 
         $validated = $request->validate([
@@ -32,6 +32,6 @@ class PurchaseController extends Controller
             return $purchase;
         });
 
-        return response()->json($purchase, 201);
+        return $this->created($purchase, 'Purchase recorded successfully.');
     }
 }
