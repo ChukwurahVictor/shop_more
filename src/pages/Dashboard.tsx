@@ -1,7 +1,8 @@
-import { useState, type ChangeEvent, type FC, type CSSProperties } from 'react';
+import { useState, type FC, type CSSProperties } from 'react';
 import { isAxiosError } from 'axios';
 import { useAchievements } from '../hooks/useAchievements';
 import { simulatePurchase } from '../api/achievements';
+import { useAuth } from '../context/AuthContext';
 import type { ApiErrorData } from '../types';
 import BadgeDisplay from '../components/BadgeDisplay';
 import BadgeJourney from '../components/BadgeJourney';
@@ -11,16 +12,15 @@ import SkeletonLoader from '../components/SkeletonLoader';
 import ErrorState from '../components/ErrorState';
 
 const Dashboard: FC = () => {
-  const [userId, setUserId] = useState<number>(1);
+  const { user, logout } = useAuth();
+  const userId = user!.id;
+
   const [purchasing, setPurchasing] = useState<boolean>(false);
   const [purchaseError, setPurchaseError] = useState<string | null>(null);
   const [purchaseSuccess, setPurchaseSuccess] = useState<boolean>(false);
+  const [loggingOut, setLoggingOut] = useState<boolean>(false);
 
   const { data, isLoading, isError, refetch } = useAchievements(userId);
-
-  function handleUserChange(e: ChangeEvent<HTMLSelectElement>): void {
-    setUserId(Number(e.target.value));
-  }
 
   async function handleSimulatePurchase(): Promise<void> {
     setPurchasing(true);
@@ -44,32 +44,50 @@ const Dashboard: FC = () => {
     }
   }
 
+  async function handleLogout(): Promise<void> {
+    setLoggingOut(true);
+    await logout();
+  }
+
+  const firstName = user!.name.split(' ')[0];
+
   return (
     <div style={pageStyles.page}>
+      {/* ── Top Nav ── */}
+      <nav style={pageStyles.nav}>
+        <div style={pageStyles.navInner}>
+          <div style={pageStyles.navBrand}>
+            <svg width="22" height="22" viewBox="0 0 28 28" fill="none" aria-hidden="true">
+              <circle cx="14" cy="14" r="14" fill="#1d9e75" />
+              <path d="M8 14.5l4 4 8-8" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+            <span style={pageStyles.navBrandName}>Bumpa Rewards</span>
+          </div>
+
+          <div style={pageStyles.navRight}>
+            <div style={pageStyles.avatarChip}>
+              <div style={pageStyles.avatar}>{user!.name[0].toUpperCase()}</div>
+              <span style={pageStyles.avatarName}>{user!.name}</span>
+            </div>
+            <button
+              style={{ ...pageStyles.logoutBtn, ...(loggingOut ? pageStyles.logoutBtnDisabled : {}) }}
+              onClick={handleLogout}
+              disabled={loggingOut}
+              type="button"
+            >
+              {loggingOut ? 'Signing out…' : 'Sign out'}
+            </button>
+          </div>
+        </div>
+      </nav>
+
       <main style={pageStyles.main}>
         {/* ── Header ── */}
         <header style={pageStyles.header}>
           <div>
-            <h1 style={pageStyles.greeting}>Welcome back!</h1>
+            <h1 style={pageStyles.greeting}>Welcome back, {firstName}!</h1>
             <p style={pageStyles.subGreeting}>Here's your loyalty progress at a glance.</p>
           </div>
-
-          <label style={pageStyles.selectorLabel} htmlFor="user-select">
-            <span style={pageStyles.selectorText}>Demo user</span>
-            <select
-              id="user-select"
-              style={pageStyles.select}
-              value={userId}
-              onChange={handleUserChange}
-              aria-label="Switch demo user"
-            >
-              {([1, 2, 3, 4, 5] as const).map((id) => (
-                <option key={id} value={id}>
-                  User {id}
-                </option>
-              ))}
-            </select>
-          </label>
         </header>
 
         {/* ── Loading ── */}
@@ -160,7 +178,79 @@ const pageStyles: Record<string, CSSProperties> = {
     minHeight: '100vh',
     background: '#f8f8f6',
     fontFamily: 'system-ui, -apple-system, sans-serif',
-    padding: '0 0 64px',
+    paddingBottom: '64px',
+  },
+  nav: {
+    background: '#ffffff',
+    borderBottom: '1px solid #ebebeb',
+    position: 'sticky' as const,
+    top: 0,
+    zIndex: 10,
+  },
+  navInner: {
+    maxWidth: '900px',
+    margin: '0 auto',
+    padding: '0 16px',
+    height: '60px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '16px',
+  },
+  navBrand: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  navBrandName: {
+    fontSize: '16px',
+    fontWeight: '700',
+    color: '#1a1a1a',
+    letterSpacing: '-0.2px',
+  },
+  navRight: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  avatarChip: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  avatar: {
+    width: '32px',
+    height: '32px',
+    borderRadius: '50%',
+    background: '#1d9e75',
+    color: '#fff',
+    fontSize: '13px',
+    fontWeight: '700',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexShrink: 0,
+  },
+  avatarName: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#333',
+  },
+  logoutBtn: {
+    padding: '7px 14px',
+    fontSize: '13px',
+    fontWeight: '600',
+    background: 'transparent',
+    color: '#666',
+    border: '1px solid #ddd',
+    borderRadius: '7px',
+    cursor: 'pointer',
+    transition: 'filter 150ms ease',
+    fontFamily: 'inherit',
+  },
+  logoutBtnDisabled: {
+    opacity: 0.5,
+    cursor: 'not-allowed',
   },
   main: {
     maxWidth: '900px',
@@ -188,30 +278,6 @@ const pageStyles: Record<string, CSSProperties> = {
     margin: '4px 0 0',
     fontSize: '14px',
     color: '#888',
-  },
-  selectorLabel: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '4px',
-    alignItems: 'flex-end',
-  },
-  selectorText: {
-    fontSize: '11px',
-    fontWeight: '600',
-    color: '#aaa',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  select: {
-    padding: '8px 12px',
-    border: '1px solid #ebebeb',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontFamily: 'inherit',
-    background: '#ffffff',
-    color: '#1a1a1a',
-    cursor: 'pointer',
-    outline: 'none',
   },
   badgeRow: {
     display: 'grid',
