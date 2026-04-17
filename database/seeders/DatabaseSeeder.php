@@ -23,7 +23,8 @@ class DatabaseSeeder extends Seeder
 
             [
                 'name'     => 'Test User',
-                'password' => Hash::make('password'),
+'password' => Hash::make('Shopmore1!'),
+
             ]
         );
 

@@ -4,6 +4,21 @@ A fullstack Laravel 11 + React 19 application that tracks user purchases and aut
 
 ---
 
+## Try It Now
+
+Once the app is running (see [Quick Start](#quick-start--docker-recommended) below), open **http://localhost:8088** and log in with the pre-seeded account:
+
+| Field | Value |
+|-------|-------|
+| **Email** | `test@shopmore.com` |
+| **Password** | `Shopmore1!` |
+
+This account starts with 0 purchases and a Bronze badge — make purchases in the shop to watch achievements unlock and your badge tier upgrade in real time.
+
+> Want to see a more advanced state? Log in via the API and check the [Seed Accounts](#seed-accounts) section for factory users that start at higher tiers.
+
+---
+
 ## Table of Contents
 
 - [Tech Stack](#tech-stack)
@@ -82,11 +97,6 @@ docker compose up
 | Node.js | 20+ |
 | npm | 10+ |
 
-> **macOS:** If your system PHP is older, use Homebrew:
-> ```bash
-> /opt/homebrew/bin/php --version
-> ```
-
 ### Backend
 
 ```bash
@@ -152,14 +162,18 @@ Tests use an **in-memory SQLite database** and reset between each test.
 
 ## Seed Accounts
 
+The seeder creates one named account and five factory accounts at different progression stages.
+
 | Email | Password | Purchases | Badge |
 |-------|----------|-----------|-------|
-| `test@shopmore.com` | `password` | 0 | Bronze |
+| `test@shopmore.com` | `Shopmore1!` | 0 | Bronze |
 | _(factory)_ | _(random)_ | 1 | Bronze |
 | _(factory)_ | _(random)_ | 5 | Silver |
 | _(factory)_ | _(random)_ | 10 | Silver |
 | _(factory)_ | _(random)_ | 20 | Gold |
 | _(factory)_ | _(random)_ | 50 | Platinum |
+
+> **Password policy:** passwords must be at least 8 characters and include an uppercase letter, a lowercase letter, a number, and a special character.
 
 ---
 
