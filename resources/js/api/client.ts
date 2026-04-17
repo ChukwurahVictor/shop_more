@@ -3,7 +3,7 @@ import axios from 'axios';
 export const TOKEN_KEY = "shopmore_token";
 
 export const client = axios.create({
-    baseURL: "http://localhost:8088",
+    baseURL: import.meta.env.VITE_API_URL || "http://localhost:8088",
     headers: { "Content-Type": "application/json" },
 });
 

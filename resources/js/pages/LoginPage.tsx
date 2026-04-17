@@ -1,265 +1,168 @@
-import { type ChangeEvent, type FC, type FormEvent, type CSSProperties, useState } from 'react';
-import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
-import { isAxiosError } from 'axios';
-import { useAuth } from '../context/AuthContext';
+import { type ChangeEvent, type FC, type FormEvent, useState } from "react";
+import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import { isAxiosError } from "axios";
+import { useAuth } from "../context/AuthContext";
+import { useToast } from "../context/ToastContext";
 
 interface LocationState {
-  from?: { pathname: string };
+    from?: { pathname: string };
 }
 
 const LoginPage: FC = () => {
-  const { login, isAuthenticated } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  const from = (location.state as LocationState)?.from?.pathname ?? '/';
+    const { login, isAuthenticated } = useAuth();
+    const { toast } = useToast();
+    const navigate = useNavigate();
+    const location = useLocation();
+    const from = (location.state as LocationState)?.from?.pathname ?? "/";
 
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
 
-  if (isAuthenticated) {
-    return <Navigate to={from} replace />;
-  }
-
-  async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
-    e.preventDefault();
-    setError(null);
-    setSubmitting(true);
-    try {
-      await login({ email, password });
-      navigate(from, { replace: true });
-    } catch (err: unknown) {
-      if (isAxiosError(err)) {
-        const msg =
-          err.response?.data?.message ??
-          err.response?.data?.errors?.email?.[0] ??
-          'Login failed. Please check your credentials.';
-        setError(msg);
-      } else {
-        setError('Something went wrong. Please try again.');
-      }
-    } finally {
-      setSubmitting(false);
+    if (isAuthenticated) {
+        return <Navigate to={from} replace />;
     }
-  }
 
-  return (
-      <div style={styles.page}>
-          <div style={styles.card}>
-              {/* Brand */}
-              <div style={styles.brand}>
-                  <div style={styles.logoMark}>
-                      <svg
-                          width="28"
-                          height="28"
-                          viewBox="0 0 28 28"
-                          fill="none"
-                          aria-hidden="true"
-                      >
-                          <circle cx="14" cy="14" r="14" fill="#1d9e75" />
-                          <path
-                              d="M8 14.5l4 4 8-8"
-                              stroke="#fff"
-                              strokeWidth="2.2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                          />
-                      </svg>
-                  </div>
-                  <span style={styles.brandName}>ShopMore Rewards</span>
-              </div>
+    async function handleSubmit(e: FormEvent<HTMLFormElement>): Promise<void> {
+        e.preventDefault();
+        setError(null);
+        setSubmitting(true);
+        try {
+            await login({ email, password });
+            toast("Welcome back!", "success");
+            navigate(from, { replace: true });
+        } catch (err: unknown) {
+            if (isAxiosError(err)) {
+                const msg =
+                    err.response?.data?.message ??
+                    err.response?.data?.errors?.email?.[0] ??
+                    "Login failed. Please check your credentials.";
+                setError(msg);
+            } else {
+                setError("Something went wrong. Please try again.");
+            }
+        } finally {
+            setSubmitting(false);
+        }
+    }
 
-              <h1 style={styles.heading}>Welcome back</h1>
-              <p style={styles.subheading}>
-                  Sign in to view your achievements and loyalty progress.
-              </p>
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-gray-50 to-amber-50 px-4 py-6">
+            <div className="w-full max-w-[420px] bg-white rounded-2xl px-9 py-10 shadow-lg border border-gray-200">
+                {/* Brand */}
+                <div className="flex items-center gap-2.5 mb-7">
+                    <div className="flex items-center justify-center">
+                        <svg
+                            width="28"
+                            height="28"
+                            viewBox="0 0 28 28"
+                            fill="none"
+                            aria-hidden="true"
+                        >
+                            <circle cx="14" cy="14" r="14" fill="#1d9e75" />
+                            <path
+                                d="M8 14.5l4 4 8-8"
+                                stroke="#fff"
+                                strokeWidth="2.2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                            />
+                        </svg>
+                    </div>
+                    <span className="text-[17px] font-bold text-gray-900 tracking-tight">
+                        ShopMore Rewards
+                    </span>
+                </div>
 
-              <form onSubmit={handleSubmit} noValidate style={styles.form}>
-                  <div style={styles.fieldGroup}>
-                      <label htmlFor="email" style={styles.label}>
-                          Email address
-                      </label>
-                      <input
-                          id="email"
-                          type="email"
-                          autoComplete="email"
-                          required
-                          value={email}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              setEmail(e.target.value)
-                          }
-                          style={styles.input}
-                          placeholder="you@example.com"
-                          disabled={submitting}
-                      />
-                  </div>
+                <h1 className="mb-1.5 text-2xl font-bold text-gray-900 tracking-tight">
+                    Welcome back
+                </h1>
+                <p className="mb-7 text-sm text-gray-500 leading-relaxed">
+                    Sign in to view your achievements and loyalty progress.
+                </p>
 
-                  <div style={styles.fieldGroup}>
-                      <label htmlFor="password" style={styles.label}>
-                          Password
-                      </label>
-                      <input
-                          id="password"
-                          type="password"
-                          autoComplete="current-password"
-                          required
-                          value={password}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              setPassword(e.target.value)
-                          }
-                          style={styles.input}
-                          placeholder="••••••••"
-                          disabled={submitting}
-                      />
-                  </div>
+                <form
+                    onSubmit={handleSubmit}
+                    noValidate
+                    className="flex flex-col gap-[18px]"
+                >
+                    <div className="flex flex-col gap-1.5">
+                        <label
+                            htmlFor="email"
+                            className="text-[13px] font-semibold text-gray-700"
+                        >
+                            Email address
+                        </label>
+                        <input
+                            id="email"
+                            type="email"
+                            autoComplete="email"
+                            required
+                            value={email}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                setEmail(e.target.value)
+                            }
+                            className="w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand disabled:opacity-50"
+                            placeholder="you@example.com"
+                            disabled={submitting}
+                        />
+                    </div>
 
-                  {error && (
-                      <p
-                          style={styles.errorMsg}
-                          role="alert"
-                          aria-live="assertive"
-                      >
-                          {error}
-                      </p>
-                  )}
+                    <div className="flex flex-col gap-1.5">
+                        <label
+                            htmlFor="password"
+                            className="text-[13px] font-semibold text-gray-700"
+                        >
+                            Password
+                        </label>
+                        <input
+                            id="password"
+                            type="password"
+                            autoComplete="current-password"
+                            required
+                            value={password}
+                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                setPassword(e.target.value)
+                            }
+                            className="w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand disabled:opacity-50"
+                            placeholder="••••••••"
+                            disabled={submitting}
+                        />
+                    </div>
 
-                  <button
-                      type="submit"
-                      style={{
-                          ...styles.submitBtn,
-                          ...(submitting ? styles.submitBtnDisabled : {}),
-                      }}
-                      disabled={submitting}
-                      aria-busy={submitting}
-                  >
-                      {submitting ? "Signing in…" : "Sign in"}
-                  </button>
-              </form>
+                    {error && (
+                        <p
+                            className="m-0 px-3.5 py-2.5 text-[13px] text-red-700 bg-red-50 border border-red-200 rounded-lg"
+                            role="alert"
+                            aria-live="assertive"
+                        >
+                            {error}
+                        </p>
+                    )}
 
-              <p style={styles.switchText}>
-                  Don't have an account?{" "}
-                  <Link to="/register" style={styles.switchLink}>
-                      Create one
-                  </Link>
-              </p>
-          </div>
-      </div>
-  );
+                    <button
+                        type="submit"
+                        className="mt-1 py-3 text-[15px] font-semibold bg-brand text-white border-none rounded-lg cursor-pointer transition-all duration-150 w-full hover:brightness-110 disabled:opacity-65 disabled:cursor-not-allowed"
+                        disabled={submitting}
+                        aria-busy={submitting}
+                    >
+                        {submitting ? "Signing in…" : "Sign in"}
+                    </button>
+                </form>
+
+                <p className="mt-6 text-center text-[13px] text-gray-500">
+                    Don't have an account?{" "}
+                    <Link
+                        to="/register"
+                        className="text-brand font-semibold no-underline hover:underline"
+                    >
+                        Create one
+                    </Link>
+                </p>
+            </div>
+        </div>
+    );
 };
 
 export default LoginPage;
-
-const styles: Record<string, CSSProperties> = {
-  page: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #f0fdf8 0%, #f8f8f6 60%, #fef9ec 100%)',
-    padding: '24px 16px',
-  },
-  card: {
-    width: '100%',
-    maxWidth: '420px',
-    background: '#ffffff',
-    borderRadius: '16px',
-    padding: '40px 36px',
-    boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-    border: '1px solid #ebebeb',
-  },
-  brand: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    marginBottom: '28px',
-  },
-  logoMark: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  brandName: {
-    fontSize: '17px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    letterSpacing: '-0.2px',
-  },
-  heading: {
-    margin: '0 0 6px',
-    fontSize: '24px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    letterSpacing: '-0.4px',
-  },
-  subheading: {
-    margin: '0 0 28px',
-    fontSize: '14px',
-    color: '#666',
-    lineHeight: 1.5,
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '18px',
-  },
-  fieldGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  label: {
-    fontSize: '13px',
-    fontWeight: '600',
-    color: '#333',
-  },
-  input: {
-    padding: '11px 14px',
-    fontSize: '14px',
-    border: '1px solid #ddd',
-    borderRadius: '8px',
-    outline: 'none',
-    background: '#fafafa',
-    color: '#1a1a1a',
-    transition: 'border-color 150ms ease',
-    width: '100%',
-    boxSizing: 'border-box' as const,
-  },
-  errorMsg: {
-    margin: 0,
-    padding: '10px 14px',
-    fontSize: '13px',
-    color: '#b91c1c',
-    background: '#fef2f2',
-    border: '1px solid #fecaca',
-    borderRadius: '8px',
-  },
-  submitBtn: {
-    marginTop: '4px',
-    padding: '13px',
-    fontSize: '15px',
-    fontWeight: '600',
-    background: '#1d9e75',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'filter 150ms ease',
-    width: '100%',
-  },
-  submitBtnDisabled: {
-    opacity: 0.65,
-    cursor: 'not-allowed',
-  },
-  switchText: {
-    marginTop: '24px',
-    textAlign: 'center' as const,
-    fontSize: '13px',
-    color: '#666',
-  },
-  switchLink: {
-    color: '#1d9e75',
-    fontWeight: '600',
-    textDecoration: 'none',
-  },
-};
