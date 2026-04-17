@@ -1,16 +1,10 @@
 import type { FC, CSSProperties } from 'react';
 import type { BadgeTier } from '../types';
+import { BADGE_COLOR } from "../constants/badges";
 
 interface BadgeDisplayProps {
   badgeName: BadgeTier | null;
 }
-
-const BADGE_COLORS: Record<BadgeTier, string> = {
-  Bronze: '#cd7f32',
-  Silver: '#a8a9ad',
-  Gold: '#FFD700',
-  Platinum: '#6a0dad',
-};
 
 const BadgeDisplay: FC<BadgeDisplayProps> = ({ badgeName }) => {
   if (!badgeName) {
@@ -38,7 +32,7 @@ const BadgeDisplay: FC<BadgeDisplayProps> = ({ badgeName }) => {
     );
   }
 
-  const color = BADGE_COLORS[badgeName];
+  const color = BADGE_COLOR[badgeName];
   const isPlatinum = badgeName === 'Platinum';
 
   return (

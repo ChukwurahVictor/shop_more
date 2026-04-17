@@ -1,23 +1,16 @@
 import type { FC, CSSProperties } from 'react';
 import type { BadgeTier } from '../types';
-
-interface BadgeEntry {
-  name: BadgeTier;
-  color: string;
-}
+import { BADGE_TIERS, BADGE_COLOR } from "../constants/badges";
 
 interface BadgeJourneyProps {
   currentBadge: BadgeTier | null;
 }
 
-const BADGES: BadgeEntry[] = [
-  { name: 'Bronze',   color: '#cd7f32' },
-  { name: 'Silver',   color: '#a8a9ad' },
-  { name: 'Gold',     color: '#FFD700' },
-  { name: 'Platinum', color: '#6a0dad' },
-];
-
 const BadgeJourney: FC<BadgeJourneyProps> = ({ currentBadge }) => {
+  const BADGES = BADGE_TIERS.map((name) => ({
+      name,
+      color: BADGE_COLOR[name],
+  }));
   const currentIndex = BADGES.findIndex((b) => b.name === currentBadge);
 
   return (

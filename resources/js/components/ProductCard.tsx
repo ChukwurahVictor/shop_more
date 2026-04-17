@@ -1,13 +1,7 @@
 import { type FC, type CSSProperties } from 'react';
+import type { Product } from "../constants/products";
 
-export interface Product {
-  id: number;
-  name: string;
-  category: string;
-  price: number;
-  emoji: string;
-  gradient: string;
-}
+export type { Product };
 
 interface ProductCardProps {
   product: Product;

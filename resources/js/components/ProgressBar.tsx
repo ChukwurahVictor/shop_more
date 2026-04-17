@@ -1,32 +1,53 @@
 import { useState, useEffect, type FC, type CSSProperties } from 'react';
 import type { BadgeTier } from '../types';
+import { PURCHASE_MILESTONES } from "../constants/badges";
 
 interface ProgressBarProps {
-  current: number;
-  remaining: number;
-  nextBadge: BadgeTier | null;
-  currentBadge: BadgeTier | null;
+    totalPurchases: number;
+    unlockedCount: number; // number of achievements already unlocked
+    nextBadge: BadgeTier | null;
+    currentBadge: BadgeTier | null;
 }
 
-const ProgressBar: FC<ProgressBarProps> = ({ current, remaining, nextBadge, currentBadge }) => {
-  const isPlatinum = currentBadge === 'Platinum';
-  const isNewUser = currentBadge === null && nextBadge === null;
-  const total = current + remaining;
-  const percent = isPlatinum ? 100 : total > 0 ? Math.min((current / total) * 100, 100) : 0;
+const ProgressBar: FC<ProgressBarProps> = ({
+    totalPurchases,
+    unlockedCount,
+    nextBadge,
+    currentBadge,
+}) => {
+    const isPlatinum = currentBadge === "Platinum";
 
-  const [width, setWidth] = useState(0);
+    // Next milestone is the one at index `unlockedCount` (0-based)
+    const nextMilestone = PURCHASE_MILESTONES[unlockedCount] ?? null;
+    const prevMilestone =
+        unlockedCount > 0
+            ? PURCHASE_MILESTONES[unlockedCount - 1]!.purchases
+            : 0;
 
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      requestAnimationFrame(() => setWidth(percent));
-    });
-    return () => cancelAnimationFrame(id);
-  }, [percent]);
+    const percent = isPlatinum
+        ? 100
+        : nextMilestone
+          ? Math.min(
+                ((totalPurchases - prevMilestone) /
+                    (nextMilestone.purchases - prevMilestone)) *
+                    100,
+                100,
+            )
+          : 100;
 
-  if (isPlatinum) {
-    return (
-      <section style={styles.wrapper} aria-label="Badge progress">
-        <style>{`
+    const [width, setWidth] = useState(0);
+
+    useEffect(() => {
+        const id = requestAnimationFrame(() => {
+            requestAnimationFrame(() => setWidth(percent));
+        });
+        return () => cancelAnimationFrame(id);
+    }, [percent]);
+
+    if (isPlatinum) {
+        return (
+            <section style={styles.wrapper} aria-label="Badge progress">
+                <style>{`
           @keyframes celebrate {
             0%, 100% { transform: scale(1); }
             50%       { transform: scale(1.04); }
@@ -36,49 +57,72 @@ const ProgressBar: FC<ProgressBarProps> = ({ current, remaining, nextBadge, curr
             display: inline-block;
           }
         `}</style>
-        <div style={styles.platinumBanner}>
-          <span className="celebrate-text" style={styles.platinumText}>
-            🏆 You've reached the highest badge!
-          </span>
-        </div>
-      </section>
-    );
-  }
+                <div style={styles.platinumBanner}>
+                    <span
+                        className="celebrate-text"
+                        style={styles.platinumText}
+                    >
+                        🏆 You've reached the highest badge!
+                    </span>
+                </div>
+            </section>
+        );
+    }
 
-  if (isNewUser) {
+    if (!nextMilestone) {
+        return (
+            <section style={styles.wrapper} aria-label="Badge progress">
+                <p style={styles.label}>
+                    Start making purchases to earn achievements and unlock your
+                    first badge!
+                </p>
+                <div
+                    style={styles.track}
+                    role="progressbar"
+                    aria-valuenow={0}
+                    aria-valuemax={1}
+                    aria-label="No progress yet"
+                >
+                    <div style={{ ...styles.fill, width: "0%" }} />
+                </div>
+                <p style={styles.counts}>
+                    0 / {PURCHASE_MILESTONES[0]!.purchases} purchases
+                </p>
+            </section>
+        );
+    }
+
+    const remaining = Math.max(nextMilestone.purchases - totalPurchases, 0);
+
     return (
-      <section style={styles.wrapper} aria-label="Badge progress">
-        <p style={styles.label}>Start making purchases to earn achievements and unlock your first badge!</p>
-        <div style={styles.track} role="progressbar" aria-valuenow={0} aria-valuemax={1} aria-label="No progress yet">
-          <div style={{ ...styles.fill, width: '0%' }} />
-        </div>
-        <p style={styles.counts}>0 achievements unlocked</p>
-      </section>
+        <section style={styles.wrapper} aria-label="Badge progress">
+            <p style={styles.label}>
+                <strong>{remaining}</strong> more purchase
+                {remaining !== 1 ? "s" : ""} to unlock{" "}
+                <strong>{nextMilestone.name}</strong>
+                {nextBadge ? (
+                    <>
+                        {" "}
+                        → <strong>{nextBadge}</strong>
+                    </>
+                ) : null}
+            </p>
+
+            <div
+                style={styles.track}
+                role="progressbar"
+                aria-valuenow={totalPurchases}
+                aria-valuemax={nextMilestone.purchases}
+                aria-label={`${totalPurchases} of ${nextMilestone.purchases} purchases`}
+            >
+                <div style={{ ...styles.fill, width: `${width}%` }} />
+            </div>
+
+            <p style={styles.counts}>
+                {totalPurchases} / {nextMilestone.purchases} purchases
+            </p>
+        </section>
     );
-  }
-
-  return (
-    <section style={styles.wrapper} aria-label="Badge progress">
-      <p style={styles.label}>
-        <strong>{remaining}</strong> more achievement{remaining !== 1 ? 's' : ''} to reach{' '}
-        <strong>{nextBadge}</strong>
-      </p>
-
-      <div
-        style={styles.track}
-        role="progressbar"
-        aria-valuenow={current}
-        aria-valuemax={total}
-        aria-label={`${current} of ${total} achievements unlocked`}
-      >
-        <div style={{ ...styles.fill, width: `${width}%` }} />
-      </div>
-
-      <p style={styles.counts}>
-        {current} / {total} achievements unlocked
-      </p>
-    </section>
-  );
 };
 
 export default ProgressBar;
