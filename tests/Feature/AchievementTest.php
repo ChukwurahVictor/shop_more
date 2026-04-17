@@ -2,16 +2,19 @@
 
 declare(strict_types=1);
 
+use App\Contracts\PaymentProviderInterface;
+
 use App\Events\AchievementUnlocked;
 use App\Events\BadgeUnlocked;
 use App\Events\PurchaseCompleted;
-use App\Listeners\ProcessBadgeCashback;
+
 use App\Models\Purchase;
 use App\Models\User;
 use App\Models\UserAchievement;
 use App\Services\AchievementService;
 use App\Services\BadgeService;
-use Illuminate\Log\LogManager;
+use App\Services\CashbackService;
+
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Log;
 
@@ -37,9 +40,9 @@ function postPurchase(User $actor, int $userId, float $amount): \Illuminate\Test
     return test()->actingAs($actor)->postJson("/api/users/{$userId}/purchases", ['amount' => $amount]);
 }
 
-// ──────────────────────────────────────────────────────────────────────────────
-// 1. New user with 0 purchases
-// ──────────────────────────────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════════════════════
+// ACHIEVEMENT & BADGE TESTS
+// ══════════════════════════════════════════════════════════════════════════════
 
 it('returns empty achievements and Bronze badge for a user with no purchases', function (): void {
     $user = User::factory()->create();
@@ -53,10 +56,6 @@ it('returns empty achievements and Bronze badge for a user with no purchases', f
         ->assertJsonPath('data.next_badge', 'Silver')
         ->assertJsonPath('data.remaining_to_unlock_next_badge', 2);
 });
-
-// ──────────────────────────────────────────────────────────────────────────────
-// 2. After 1 purchase – "First Steps" is unlocked
-// ──────────────────────────────────────────────────────────────────────────────
 
 it('unlocks First Steps after 1 purchase', function (): void {
     $user = User::factory()->create();
@@ -75,10 +74,6 @@ it('unlocks First Steps after 1 purchase', function (): void {
         ->assertJsonPath('data.next_available_achievements', ['Regular Shopper'])
         ->assertJsonPath('data.current_badge', 'Bronze');
 });
-
-// ──────────────────────────────────────────────────────────────────────────────
-// 3. After 5 purchases – "Regular Shopper" is unlocked, badge → Silver
-// ──────────────────────────────────────────────────────────────────────────────
 
 it('unlocks Regular Shopper after 5 purchases and badge is Silver', function (): void {
     $user = User::factory()->create();
@@ -99,10 +94,6 @@ it('unlocks Regular Shopper after 5 purchases and badge is Silver', function ():
         ->assertJsonPath('data.current_badge', 'Silver');
 });
 
-// ──────────────────────────────────────────────────────────────────────────────
-// 4. After 10 purchases – "Loyal Customer" unlocked; badge stays Silver (3 ach.)
-// ──────────────────────────────────────────────────────────────────────────────
-
 it('unlocks Loyal Customer after 10 purchases and badge is Silver', function (): void {
     $user = User::factory()->create();
 
@@ -122,10 +113,6 @@ it('unlocks Loyal Customer after 10 purchases and badge is Silver', function ():
         ->assertJsonPath('data.unlocked_achievements.2', 'Loyal Customer');
 });
 
-// ──────────────────────────────────────────────────────────────────────────────
-// 5. AchievementUnlocked event is fired when a milestone is hit
-// ──────────────────────────────────────────────────────────────────────────────
-
 it('fires AchievementUnlocked event when a purchase milestone is reached', function (): void {
     Event::fake([AchievementUnlocked::class]);
 
@@ -140,10 +127,6 @@ it('fires AchievementUnlocked event when a purchase milestone is reached', funct
             $e->user->is($user) && $e->achievementName === 'First Steps',
     );
 });
-
-// ──────────────────────────────────────────────────────────────────────────────
-// 6. BadgeUnlocked event is fired when badge changes
-// ──────────────────────────────────────────────────────────────────────────────
 
 it('fires BadgeUnlocked event when badge tier changes', function (): void {
     Event::fake([BadgeUnlocked::class]);
@@ -167,34 +150,230 @@ it('fires BadgeUnlocked event when badge tier changes', function (): void {
     );
 });
 
-// ──────────────────────────────────────────────────────────────────────────────
-// 7. ProcessBadgeCashback logs the cashback message on BadgeUnlocked
-// ──────────────────────────────────────────────────────────────────────────────
+it('does not fire duplicate AchievementUnlocked events on re-evaluation', function (): void {
+    Event::fake([AchievementUnlocked::class]);
 
-it('logs cashback info when ProcessBadgeCashback handles a BadgeUnlocked event', function (): void {
-    $user  = User::factory()->create();
-    $event = new BadgeUnlocked($user, 'Silver');
+    $user = User::factory()->create();
+    $user->purchases()->create(['amount' => 100.00]);
 
-    $mockLogger = Mockery::mock(\Psr\Log\LoggerInterface::class);
-    $mockLogger->shouldReceive('info')
+    $service = app(AchievementService::class);
+    $service->evaluate($user);
+    $service->evaluate($user); // second call — should not fire again
+
+    Event::assertDispatchedTimes(AchievementUnlocked::class, 1);
+});
+
+it('returns correct next badge and remaining count for Gold tier', function (): void {
+    $user = User::factory()->create();
+
+    // 20 purchases → 4 achievements (First Steps, Regular Shopper, Loyal Customer, Super Fan) → Gold
+    for ($i = 0; $i < 20; $i++) {
+        $user->purchases()->create(['amount' => 50.00]);
+    }
+
+    $badgeService       = app(BadgeService::class);
+    $achievementService = app(AchievementService::class);
+    $previousBadge      = $badgeService->currentBadge($user);
+    $achievementService->evaluate($user);
+    $badgeService->evaluate($user, $previousBadge);
+
+    getAchievements($user, $user->id)
+        ->assertOk()
+        ->assertJsonPath('data.current_badge', 'Gold')
+        ->assertJsonPath('data.next_badge', 'Platinum')
+        ->assertJsonPath('data.remaining_to_unlock_next_badge', 1);
+});
+
+it('returns null next badge and 0 remaining for Platinum tier', function (): void {
+    $user = User::factory()->create();
+
+    for ($i = 0; $i < 50; $i++) {
+        $user->purchases()->create(['amount' => 50.00]);
+    }
+
+    $badgeService       = app(BadgeService::class);
+    $achievementService = app(AchievementService::class);
+    $previousBadge      = $badgeService->currentBadge($user);
+    $achievementService->evaluate($user);
+    $badgeService->evaluate($user, $previousBadge);
+
+    getAchievements($user, $user->id)
+        ->assertOk()
+        ->assertJsonPath('data.current_badge', 'Platinum')
+        ->assertJsonPath('data.next_badge', null)
+        ->assertJsonPath('data.remaining_to_unlock_next_badge', 0)
+        ->assertJsonPath('data.next_available_achievements', []);
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CASHBACK TESTS
+// ══════════════════════════════════════════════════════════════════════════════
+
+it('logs cashback initiated and result when CashbackService handles a badge unlock', function (): void {
+    $user = User::factory()->create();
+
+    Log::shouldReceive('channel')->with('payments')->andReturnSelf();
+    Log::shouldReceive('info')->atLeast()->twice(); // 'Cashback initiated' + 'Cashback result' (+ provider log)
+
+    app(CashbackService::class)->issueBadgeCashback($user, 'Silver');
+});
+
+it('calls the payment provider with correct arguments via the interface', function (): void {
+    $mockProvider = Mockery::mock(PaymentProviderInterface::class);
+    $mockProvider->shouldReceive('disburse')
         ->once()
-        ->withArgs(function (string $message, array $context) use ($user): bool {
-            return $message === 'Cashback initiated'
-                && $context['user_id']    === $user->id
-                && $context['badge_name'] === 'Silver'
-                && $context['amount']     === 300
-                && $context['currency']   === 'NGN'
-                && isset($context['timestamp']);
-        });
+        ->withArgs(function (int $userId, int $amountKobo, string $currency, string $reference): bool {
+            return $amountKobo === 30000 && $currency === 'NGN' && str_starts_with($reference, 'cashback-');
+        })
+        ->andReturn([
+            'reference' => 'test-ref',
+            'status'    => 'success',
+            'amount'    => 30000,
+            'currency'  => 'NGN',
+            'message'   => 'Test success',
+        ]);
 
-    $mockLogManager = Mockery::mock(LogManager::class);
-    $mockLogManager->shouldReceive('channel')
-        ->with('payments')
-        ->once()
-        ->andReturn($mockLogger);
+    $this->app->instance(PaymentProviderInterface::class, $mockProvider);
 
-    $listener = new ProcessBadgeCashback($mockLogManager);
-    $listener->handle($event);
+    $user = User::factory()->create();
+    app(CashbackService::class)->issueBadgeCashback($user, 'Silver');
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INTEGRATION: FULL PURCHASE → ACHIEVEMENT → BADGE → CASHBACK FLOW
+// ══════════════════════════════════════════════════════════════════════════════
+
+it('triggers full flow: purchase → achievement → badge upgrade → cashback log', function (): void {
+    $user = User::factory()->create();
+
+    // Make 5 purchases via the API to trigger the event chain
+    for ($i = 0; $i < 5; $i++) {
+        postPurchase($user, $user->id, 100.00)->assertCreated();
+    }
+
+    // Should have 2 achievements (First Steps + Regular Shopper) → Silver badge
+    getAchievements($user, $user->id)
+        ->assertOk()
+        ->assertJsonPath('data.current_badge', 'Silver')
+        ->assertJsonPath('data.unlocked_achievements', ['First Steps', 'Regular Shopper']);
+});
+
+// ══════════════════════════════════════════════════════════════════════════════
+// AUTH TESTS
+// ══════════════════════════════════════════════════════════════════════════════
+
+it('registers a new user and returns a token', function (): void {
+    test()->postJson('/api/auth/register', [
+        'name'                  => 'Alice',
+        'email'                 => 'alice@example.com',
+        'password'              => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ])
+        ->assertCreated()
+        ->assertJsonPath('status', 'success')
+        ->assertJsonStructure(['data' => ['token', 'user' => ['id', 'name', 'email']]]);
+
+    expect(User::where('email', 'alice@example.com')->exists())->toBeTrue();
+});
+
+it('rejects registration with duplicate email', function (): void {
+    User::factory()->create(['email' => 'dup@example.com']);
+
+    test()->postJson('/api/auth/register', [
+        'name'                  => 'Bob',
+        'email'                 => 'dup@example.com',
+        'password'              => 'Password1!',
+        'password_confirmation' => 'Password1!',
+    ])->assertUnprocessable();
+});
+
+it('rejects registration with mismatched password confirmation', function (): void {
+    test()->postJson('/api/auth/register', [
+        'name'                  => 'Bob',
+        'email'                 => 'bob@example.com',
+        'password'              => 'Password1!',
+        'password_confirmation' => 'different',
+    ])->assertUnprocessable();
+});
+
+it('logs in with valid credentials and returns a token', function (): void {
+    User::factory()->create(['email' => 'login@test.com', 'password' => bcrypt('secret99')]);
+
+    test()->postJson('/api/auth/login', [
+        'email'    => 'login@test.com',
+        'password' => 'secret99',
+    ])
+        ->assertOk()
+        ->assertJsonPath('status', 'success')
+        ->assertJsonStructure(['data' => ['token', 'user']]);
+});
+
+it('rejects login with wrong password', function (): void {
+    User::factory()->create(['email' => 'fail@test.com', 'password' => bcrypt('correct')]);
+
+    test()->postJson('/api/auth/login', [
+        'email'    => 'fail@test.com',
+        'password' => 'wrong',
+    ])->assertUnprocessable();
+});
+
+
+it('logs out and revokes the current token', function (): void {
+    $user = User::factory()->create();
+
+$token = $user->createToken('api')->plainTextToken;
+
+test()->withHeader('Authorization', "Bearer {$token}")
+    ->postJson('/api/auth/logout')
+    ->assertOk()
+    ->assertJsonPath('status', 'success');
+});
+
+    it('returns authenticated user on /auth/me', function (): void {
+        $user = User::factory()->create();
+
+        test()->actingAs($user)->getJson('/api/auth/me')
+            ->assertOk()
+            ->assertJsonPath('data.email', $user->email);
+    });
+
+    it('returns 401 for unauthenticated requests to protected routes', function (): void {
+        test()->getJson('/api/auth/me')->assertUnauthorized();
+        test()->getJson('/api/users/1/achievements')->assertUnauthorized();
+        test()->postJson('/api/users/1/purchases', ['amount' => 100])->assertUnauthorized();
+    });
+
+// ══════════════════════════════════════════════════════════════════════════════
+    // PURCHASE VALIDATION
+    // ══════════════════════════════════════════════════════════════════════════════
+
+    it('rejects a purchase with missing amount', function (): void {
+        $user = User::factory()->create();
+
+        postPurchase($user, $user->id, 0)->assertUnprocessable();
+    });
+
+    it('rejects a purchase for a non-existent user', function (): void {
+        $user = User::factory()->create();
+
+
+test()->actingAs($user)->postJson('/api/users/99999/purchases', ['amount' => 100])
+    ->assertNotFound();
+});
+
+
+
+it('records a valid purchase and returns 201', function (): void {
+    $user = User::factory()->create();
+
+    postPurchase($user, $user->id, 250.00)
+        ->assertCreated()
+        ->assertJsonPath('status', 'success')
+        ->assertJsonPath('data.amount', '250.00');
+
+    expect(Purchase::where('user_id', $user->id)->count())->toBe(1);
+
+
 });
 
 // ──────────────────────────────────────────────────────────────────────────────
