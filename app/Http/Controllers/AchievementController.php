@@ -30,6 +30,8 @@ class AchievementController extends Controller
             'current_badge'                  => $this->badgeService->currentBadge($model),
             'next_badge'                     => $this->badgeService->nextBadge($model),
             'remaining_to_unlock_next_badge' => $this->badgeService->remainingToNextBadge($model),
+            'total_purchases'                => $model->purchases()->count(),
+
         ]);
     }
 }

@@ -30,11 +30,12 @@ export interface AuthResponse {
 
 /** Shape returned by GET /api/users/{userId}/achievements */
 export interface AchievementsResponse {
-  unlocked_achievements: string[];
-  next_available_achievements: string[];
-  current_badge: BadgeTier | null;
-  next_badge: BadgeTier | null;
-  remaining_to_unlock_next_badge: number;
+    unlocked_achievements: string[];
+    next_available_achievements: string[];
+    current_badge: BadgeTier | null;
+    next_badge: BadgeTier | null;
+    remaining_to_unlock_next_badge: number;
+    total_purchases: number;
 }
 
 /** Body sent to POST /api/users/{userId}/purchases */
