@@ -39,6 +39,14 @@ export default {
                     },
                     to: { opacity: "1", transform: "scale(1) translateY(0)" },
                 },
+                "pulse-ring": {
+                    "0%, 100%": { boxShadow: "0 0 0 0 rgba(29, 158, 117, 0.25)" },
+                    "50%": { boxShadow: "0 0 0 6px rgba(29, 158, 117, 0)" },
+                },
+                celebrate: {
+                    "0%, 100%": { transform: "scale(1)" },
+                    "50%": { transform: "scale(1.04)" },
+                },
             },
             animation: {
                 "toast-in": "toast-in 0.25s ease-out",
@@ -46,6 +54,8 @@ export default {
                     "confetti-fall var(--duration,3s) ease-in forwards",
                 "modal-in":
                     "modal-in 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards",
+                "pulse-ring": "pulse-ring 2s ease-in-out infinite",
+                celebrate: "celebrate 1.6s ease-in-out infinite",
             },
         },
     },

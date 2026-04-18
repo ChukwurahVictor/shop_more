@@ -1,4 +1,4 @@
-import type { FC, CSSProperties } from 'react';
+import type { FC } from 'react';
 import type { BadgeTier } from '../types';
 import { BADGE_TIERS, BADGE_COLOR } from "../constants/badges";
 
@@ -8,54 +8,48 @@ interface BadgeJourneyProps {
 
 const BadgeJourney: FC<BadgeJourneyProps> = ({ currentBadge }) => {
   const BADGES = BADGE_TIERS.map((name) => ({
-      name,
-      color: BADGE_COLOR[name],
+    name,
+    color: BADGE_COLOR[name],
   }));
   const currentIndex = BADGES.findIndex((b) => b.name === currentBadge);
 
   return (
-    <section aria-label="Badge journey" style={styles.wrapper}>
-      <div style={styles.row}>
+    <section aria-label="Badge journey" className="flex items-center justify-center py-2">
+      <div className="flex items-start gap-0">
         {BADGES.map((badge, index) => {
           const isReached = index <= currentIndex;
           const isCurrent = index === currentIndex;
           const isLast = index === BADGES.length - 1;
           const nextBadge = BADGES[index + 1];
 
-          const nodeStyle: CSSProperties = {
-            ...styles.node,
-            ...(isReached
-              ? { background: badge.color, borderColor: badge.color }
-              : styles.nodeUnreached),
-            ...(isCurrent ? styles.nodeCurrent : {}),
-          };
-
           return (
-            <div key={badge.name} style={styles.stepGroup}>
+            <div key={badge.name} className="flex flex-col items-center relative">
               <div
-                style={nodeStyle}
+                className={[
+                  'w-8 h-8 rounded-full border-[3px] flex items-center justify-center transition-[background,border-color] duration-200 z-10 relative',
+                  isReached ? '' : 'bg-[#f1f0f0] border-[#d5d4d4]',
+                  isCurrent ? 'shadow-[0_0_0_4px_rgba(29,158,117,0.15)]' : '',
+                ].join(' ')}
+                style={isReached ? { background: badge.color, borderColor: badge.color } : undefined}
                 aria-current={isCurrent ? 'step' : undefined}
                 title={badge.name}
               >
-                {isCurrent && <span style={{ ...styles.dot, background: '#fff' }} />}
+                {isCurrent && (
+                  <span className="w-2.5 h-2.5 rounded-full bg-white shrink-0" />
+                )}
               </div>
 
               <span
-                style={{
-                  ...styles.label,
-                  color: isReached ? badge.color : '#c5c5c5',
-                  fontWeight: isCurrent ? '700' : '500',
-                }}
+                className={`mt-2 text-[11px] whitespace-nowrap text-center w-14 ${isCurrent ? 'font-bold' : 'font-medium'}`}
+                style={{ color: isReached ? badge.color : '#c5c5c5' }}
               >
                 {badge.name}
               </span>
 
               {!isLast && nextBadge && (
                 <div
-                  style={{
-                    ...styles.connector,
-                    background: index < currentIndex ? nextBadge.color : '#e0dfdf',
-                  }}
+                  className="absolute top-4 left-8 w-14 h-[3px] z-0 transition-[background] duration-200"
+                  style={{ background: index < currentIndex ? nextBadge.color : '#e0dfdf' }}
                 />
               )}
             </div>
@@ -67,63 +61,3 @@ const BadgeJourney: FC<BadgeJourneyProps> = ({ currentBadge }) => {
 };
 
 export default BadgeJourney;
-
-const styles: Record<string, CSSProperties> = {
-  wrapper: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '8px 0',
-  },
-  row: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: 0,
-  },
-  stepGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    position: 'relative',
-  },
-  node: {
-    width: '32px',
-    height: '32px',
-    borderRadius: '50%',
-    border: '3px solid',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    transition: 'background 200ms ease, border-color 200ms ease',
-    zIndex: 1,
-    position: 'relative',
-  },
-  nodeUnreached: {
-    background: '#f1f0f0',
-    borderColor: '#d5d4d4',
-  },
-  nodeCurrent: {
-    boxShadow: '0 0 0 4px rgba(29,158,117,0.15)',
-  },
-  dot: {
-    width: '10px',
-    height: '10px',
-    borderRadius: '50%',
-  },
-  label: {
-    marginTop: '8px',
-    fontSize: '11px',
-    whiteSpace: 'nowrap',
-    textAlign: 'center',
-    width: '56px',
-  },
-  connector: {
-    position: 'absolute',
-    top: '16px',
-    left: '32px',
-    width: '56px',
-    height: '3px',
-    zIndex: 0,
-    transition: 'background 200ms ease',
-  },
-};

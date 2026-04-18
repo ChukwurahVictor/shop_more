@@ -16,37 +16,12 @@ const AchievementGrid: FC<AchievementGridProps> = ({
 
     return (
         <section aria-label="Achievement grid">
-            <style>{`
-        .achievement-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-          gap: 16px;
-        }
-        .next-available-chip {
-          animation: pulse-ring 2s ease-in-out infinite;
-        }
-        @keyframes pulse-ring {
-          0%, 100% {
-            box-shadow: 0 0 0 0 rgba(29, 158, 117, 0.25);
-          }
-          50% {
-            box-shadow: 0 0 0 6px rgba(29, 158, 117, 0);
-          }
-        }
-        .achievement-chip-wrapper:hover article {
-          transform: scale(1.03);
-          box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-        }
-      `}</style>
-            <div className="achievement-grid">
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(140px,1fr))] gap-4">
                 {ALL_ACHIEVEMENTS.map((achievement) => {
                     const unlocked = unlockedSet.has(achievement.name);
                     const nextAvailable = nextSet.has(achievement.name);
                     return (
-                        <div
-                            key={achievement.name}
-                            className="achievement-chip-wrapper"
-                        >
+                        <div key={achievement.name} className="group">
                             <AchievementChip
                                 name={achievement.name}
                                 description={achievement.description}

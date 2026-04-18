@@ -27,27 +27,37 @@ export default class ErrorBoundary extends Component<Props, State> {
   render() {
     if (this.state.hasError) {
       return (
-        <div style={styles.page}>
-          <div style={styles.card}>
-            <div style={styles.icon} aria-hidden="true">
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-gray-50 to-amber-50 p-6 font-sans">
+          <div className="w-full max-w-[460px] bg-white rounded-2xl px-9 py-12 shadow-[0_4px_24px_rgba(0,0,0,0.08)] border border-[#ebebeb]">
+            <div className="flex justify-center mb-6" aria-hidden="true">
               <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
                 <circle cx="28" cy="28" r="26" stroke="#f87171" strokeWidth="2.5" />
                 <path d="M28 16v16" stroke="#f87171" strokeWidth="2.5" strokeLinecap="round" />
                 <circle cx="28" cy="40" r="2.5" fill="#f87171" />
               </svg>
             </div>
-            <h1 style={styles.heading}>Something went wrong</h1>
-            <p style={styles.message}>
+            <h1 className="m-0 mb-3 text-xl font-bold text-[#1a1a1a] text-center">Something went wrong</h1>
+            <p className="m-0 mb-5 text-sm text-[#555] leading-relaxed text-center">
               An unexpected error occurred. Please try refreshing the page.
             </p>
             {this.state.error && (
-              <pre style={styles.detail}>{this.state.error.message}</pre>
+              <pre className="mb-5 px-4 py-3 text-xs text-[#c0392b] bg-red-50 rounded-lg overflow-auto border border-red-100">
+                {this.state.error.message}
+              </pre>
             )}
-            <div style={styles.actions}>
-              <button style={styles.primaryBtn} onClick={() => window.location.reload()} type="button">
+            <div className="flex gap-3">
+              <button
+                className="flex-1 py-2.5 text-sm font-semibold bg-brand text-white border-0 rounded-lg cursor-pointer font-sans hover:brightness-95 transition-all duration-150"
+                onClick={() => window.location.reload()}
+                type="button"
+              >
                 Refresh page
               </button>
-              <button style={styles.secondaryBtn} onClick={this.handleReset} type="button">
+              <button
+                className="flex-1 py-2.5 text-sm font-semibold bg-white text-[#555] border border-[#ddd] rounded-lg cursor-pointer font-sans hover:bg-gray-50 transition-all duration-150"
+                onClick={this.handleReset}
+                type="button"
+              >
                 Try again
               </button>
             </div>

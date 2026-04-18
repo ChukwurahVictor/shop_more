@@ -1,4 +1,4 @@
-import type { FC, CSSProperties } from 'react';
+import type { FC } from 'react';
 import type { BadgeTier } from '../types';
 import { BADGE_COLOR } from "../constants/badges";
 
@@ -9,8 +9,8 @@ interface BadgeDisplayProps {
 const BadgeDisplay: FC<BadgeDisplayProps> = ({ badgeName }) => {
   if (!badgeName) {
     return (
-      <div style={styles.wrapper} aria-label="No badge earned yet">
-        <div style={styles.circle}>
+      <div className="flex flex-col items-center gap-3" aria-label="No badge earned yet">
+        <div className="flex items-center justify-center">
           <svg width="120" height="120" viewBox="0 0 120 120" aria-hidden="true">
             <circle cx="60" cy="60" r="54" fill="#f5f5f5" />
             <circle cx="60" cy="60" r="54" fill="none" stroke="#e0dfdf" strokeWidth="8" />
@@ -27,7 +27,7 @@ const BadgeDisplay: FC<BadgeDisplayProps> = ({ badgeName }) => {
             </text>
           </svg>
         </div>
-        <p style={{ ...styles.label, color: '#c5c5c5' }}>No badge yet</p>
+        <p className="m-0 text-base font-bold tracking-wide text-[#c5c5c5]">No badge yet</p>
       </div>
     );
   }
@@ -36,7 +36,7 @@ const BadgeDisplay: FC<BadgeDisplayProps> = ({ badgeName }) => {
   const isPlatinum = badgeName === 'Platinum';
 
   return (
-    <div style={styles.wrapper} aria-label={`Current badge: ${badgeName}`}>
+    <div className="flex flex-col items-center gap-3" aria-label={`Current badge: ${badgeName}`}>
       <style>{`
         @keyframes badgeEnter {
           from { transform: scale(0.8); opacity: 0; }
@@ -55,7 +55,7 @@ const BadgeDisplay: FC<BadgeDisplayProps> = ({ badgeName }) => {
         }
       `}</style>
 
-      <div className="badge-circle" style={styles.circle}>
+      <div className="badge-circle flex items-center justify-center">
         <svg width="120" height="120" viewBox="0 0 120 120" aria-hidden="true">
           <circle cx="60" cy="60" r="54" fill="#ffffff" />
 
@@ -96,30 +96,9 @@ const BadgeDisplay: FC<BadgeDisplayProps> = ({ badgeName }) => {
         </svg>
       </div>
 
-      <p style={styles.label}>{badgeName}</p>
+      <p className="m-0 text-base font-bold text-[#1a1a1a] tracking-wide">{badgeName}</p>
     </div>
   );
 };
 
 export default BadgeDisplay;
-
-const styles: Record<string, CSSProperties> = {
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '12px',
-  },
-  circle: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    margin: 0,
-    fontSize: '16px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-    letterSpacing: '0.5px',
-  },
-};

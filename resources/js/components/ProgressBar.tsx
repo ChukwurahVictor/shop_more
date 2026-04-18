@@ -1,4 +1,4 @@
-import { useState, useEffect, type FC, type CSSProperties } from 'react';
+import { useState, useEffect, type FC } from 'react';
 import type { BadgeTier } from '../types';
 import { PURCHASE_MILESTONES } from "../constants/badges";
 
@@ -17,7 +17,6 @@ const ProgressBar: FC<ProgressBarProps> = ({
 }) => {
     const isPlatinum = currentBadge === "Platinum";
 
-    // Next milestone is the one at index `unlockedCount` (0-based)
     const nextMilestone = PURCHASE_MILESTONES[unlockedCount] ?? null;
     const prevMilestone =
         unlockedCount > 0
@@ -46,23 +45,10 @@ const ProgressBar: FC<ProgressBarProps> = ({
 
     if (isPlatinum) {
         return (
-            <section style={styles.wrapper} aria-label="Badge progress">
-                <style>{`
-          @keyframes celebrate {
-            0%, 100% { transform: scale(1); }
-            50%       { transform: scale(1.04); }
-          }
-          .celebrate-text {
-            animation: celebrate 1.6s ease-in-out infinite;
-            display: inline-block;
-          }
-        `}</style>
-                <div style={styles.platinumBanner}>
-                    <span
-                        className="celebrate-text"
-                        style={styles.platinumText}
-                    >
-                        🏆 You've reached the highest badge!
+            <section className="flex flex-col gap-2" aria-label="Badge progress">
+                <div className="bg-gradient-to-br from-purple-100 to-purple-200 border border-purple-300 rounded-xl px-6 py-4 text-center">
+                    <span className="animate-celebrate inline-block text-base font-semibold text-[#6a0dad]">
+                        🏆 You&apos;ve reached the highest badge!
                     </span>
                 </div>
             </section>
@@ -71,21 +57,24 @@ const ProgressBar: FC<ProgressBarProps> = ({
 
     if (!nextMilestone) {
         return (
-            <section style={styles.wrapper} aria-label="Badge progress">
-                <p style={styles.label}>
+            <section className="flex flex-col gap-2" aria-label="Badge progress">
+                <p className="m-0 text-sm text-[#444]">
                     Start making purchases to earn achievements and unlock your
                     first badge!
                 </p>
                 <div
-                    style={styles.track}
+                    className="h-3 bg-[#ebebeb] rounded-full overflow-hidden"
                     role="progressbar"
                     aria-valuenow={0}
                     aria-valuemax={1}
                     aria-label="No progress yet"
                 >
-                    <div style={{ ...styles.fill, width: "0%" }} />
+                    <div
+                        className="h-full rounded-full bg-gradient-to-r from-brand to-[#26c68e]"
+                        style={{ width: '0%', transition: 'width 600ms cubic-bezier(0.4,0,0.2,1)' }}
+                    />
                 </div>
-                <p style={styles.counts}>
+                <p className="m-0 text-xs text-[#999]">
                     0 / {PURCHASE_MILESTONES[0]!.purchases} purchases
                 </p>
             </section>
@@ -95,8 +84,8 @@ const ProgressBar: FC<ProgressBarProps> = ({
     const remaining = Math.max(nextMilestone.purchases - totalPurchases, 0);
 
     return (
-        <section style={styles.wrapper} aria-label="Badge progress">
-            <p style={styles.label}>
+        <section className="flex flex-col gap-2" aria-label="Badge progress">
+            <p className="m-0 text-sm text-[#444]">
                 <strong>{remaining}</strong> more purchase
                 {remaining !== 1 ? "s" : ""} to unlock{" "}
                 <strong>{nextMilestone.name}</strong>
@@ -109,16 +98,19 @@ const ProgressBar: FC<ProgressBarProps> = ({
             </p>
 
             <div
-                style={styles.track}
+                className="h-3 bg-[#ebebeb] rounded-full overflow-hidden"
                 role="progressbar"
                 aria-valuenow={totalPurchases}
                 aria-valuemax={nextMilestone.purchases}
                 aria-label={`${totalPurchases} of ${nextMilestone.purchases} purchases`}
             >
-                <div style={{ ...styles.fill, width: `${width}%` }} />
+                <div
+                    className="h-full rounded-full bg-gradient-to-r from-brand to-[#26c68e]"
+                    style={{ width: `${width}%`, transition: 'width 600ms cubic-bezier(0.4,0,0.2,1)' }}
+                />
             </div>
 
-            <p style={styles.counts}>
+            <p className="m-0 text-xs text-[#999]">
                 {totalPurchases} / {nextMilestone.purchases} purchases
             </p>
         </section>
@@ -127,44 +119,3 @@ const ProgressBar: FC<ProgressBarProps> = ({
 
 export default ProgressBar;
 
-const styles: Record<string, CSSProperties> = {
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  label: {
-    margin: 0,
-    fontSize: '14px',
-    color: '#444',
-  },
-  track: {
-    height: '12px',
-    background: '#ebebeb',
-    borderRadius: '100px',
-    overflow: 'hidden',
-  },
-  fill: {
-    height: '100%',
-    background: 'linear-gradient(90deg, #1d9e75 0%, #26c68e 100%)',
-    borderRadius: '100px',
-    transition: 'width 600ms cubic-bezier(0.4, 0, 0.2, 1)',
-  },
-  counts: {
-    margin: 0,
-    fontSize: '12px',
-    color: '#999',
-  },
-  platinumBanner: {
-    background: 'linear-gradient(135deg, #f3e8ff 0%, #e9d5ff 100%)',
-    border: '1px solid #d8b4fe',
-    borderRadius: '12px',
-    padding: '16px 24px',
-    textAlign: 'center',
-  },
-  platinumText: {
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#6a0dad',
-  },
-};

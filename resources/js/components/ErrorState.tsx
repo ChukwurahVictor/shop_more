@@ -1,4 +1,4 @@
-import type { FC, CSSProperties } from 'react';
+import type { FC } from 'react';
 
 interface ErrorStateProps {
   message?: string;
@@ -6,8 +6,12 @@ interface ErrorStateProps {
 }
 
 const ErrorState: FC<ErrorStateProps> = ({ message, onRetry }) => (
-  <div style={styles.wrapper} role="alert" aria-live="assertive">
-    <div style={styles.iconWrapper} aria-hidden="true">
+  <div
+    className="flex flex-col items-center justify-center px-6 py-12 gap-4 text-center bg-white border border-[#ebebeb] rounded-xl"
+    role="alert"
+    aria-live="assertive"
+  >
+    <div className="mb-2" aria-hidden="true">
       <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
         <circle cx="24" cy="24" r="22" stroke="#f87171" strokeWidth="2.5" />
         <path d="M24 14v13" stroke="#f87171" strokeWidth="2.5" strokeLinecap="round" />
@@ -15,61 +19,21 @@ const ErrorState: FC<ErrorStateProps> = ({ message, onRetry }) => (
       </svg>
     </div>
 
-    <h2 style={styles.heading}>Something went wrong</h2>
+    <h2 className="m-0 text-xl font-bold text-[#1a1a1a]">Something went wrong</h2>
 
-    <p style={styles.message}>
+    <p className="m-0 text-sm text-[#666] max-w-[360px] leading-relaxed">
       {message ??
         "We couldn\u2019t load your achievements. Please check that the backend is running and try again."}
     </p>
 
-    <button style={styles.button} onClick={onRetry} type="button">
+    <button
+      className="mt-2 px-6 py-2.5 bg-brand text-white border-0 rounded-lg text-sm font-semibold cursor-pointer transition-[background,transform] duration-200 font-sans hover:brightness-95"
+      onClick={onRetry}
+      type="button"
+    >
       Try again
     </button>
   </div>
 );
 
 export default ErrorState;
-
-const styles: Record<string, CSSProperties> = {
-  wrapper: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '48px 24px',
-    gap: '16px',
-    textAlign: 'center',
-    background: '#ffffff',
-    border: '1px solid #ebebeb',
-    borderRadius: '12px',
-  },
-  iconWrapper: {
-    marginBottom: '8px',
-  },
-  heading: {
-    margin: 0,
-    fontSize: '20px',
-    fontWeight: '700',
-    color: '#1a1a1a',
-  },
-  message: {
-    margin: 0,
-    fontSize: '14px',
-    color: '#666',
-    maxWidth: '360px',
-    lineHeight: 1.6,
-  },
-  button: {
-    marginTop: '8px',
-    padding: '10px 24px',
-    background: '#1d9e75',
-    color: '#ffffff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'background 200ms ease, transform 200ms ease',
-    fontFamily: 'inherit',
-  },
-};
