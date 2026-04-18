@@ -1,6 +1,5 @@
 import {
     type ChangeEvent,
-    type FC,
     type FormEvent,
     useState,
     useMemo,
@@ -8,15 +7,21 @@ import {
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
+import { usePageTitle } from "../hooks/usePageTitle";
+import { EyeIcon } from "../components/icons";
 
 const RegisterPage: FC = () => {
     const { register, isAuthenticated } = useAuth();
     const navigate = useNavigate();
 
+    usePageTitle("Create account");
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [passwordConfirmation, setPasswordConfirmation] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
     const [passwordTouched, setPasswordTouched] = useState(false);
@@ -120,146 +125,126 @@ const RegisterPage: FC = () => {
                     noValidate
                     className="flex flex-col gap-[18px]"
                 >
-                    <div className="flex flex-col gap-1.5">
-                        <label
-                            htmlFor="name"
-                            className="text-[13px] font-semibold text-gray-700"
-                        >
-                            Full name
-                        </label>
-                        <input
-                            id="name"
-                            type="text"
-                            autoComplete="name"
-                            required
-                            value={name}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                setName(e.target.value)
-                            }
-                            className="w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand disabled:opacity-50"
-                            placeholder="Jane Doe"
-                            disabled={submitting}
-                        />
-                    </div>
+                    {(() => {
+                        const inputClass =
+                            "w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50";
+                        const eyeToggleClass =
+                            "absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-150 bg-transparent border-0 cursor-pointer p-0";
+                        return (
+                            <>
+                                <div className="flex flex-col gap-1.5">
+                                    <label htmlFor="name" className="text-[13px] font-semibold text-gray-700">
+                                        Full name
+                                    </label>
+                                    <input
+                                        id="name"
+                                        type="text"
+                                        autoComplete="name"
+                                        required
+                                        value={name}
+                                        onChange={(e: ChangeEvent<HTMLInputElement>) => setName(e.target.value)}
+                                        className={inputClass}
+                                        placeholder="Jane Doe"
+                                        disabled={submitting}
+                                    />
+                                </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label
-                            htmlFor="email"
-                            className="text-[13px] font-semibold text-gray-700"
-                        >
-                            Email address
-                        </label>
-                        <input
-                            id="email"
-                            type="email"
-                            autoComplete="email"
-                            required
-                            value={email}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                setEmail(e.target.value)
-                            }
-                            className="w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand disabled:opacity-50"
-                            placeholder="you@example.com"
-                            disabled={submitting}
-                        />
-                    </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label htmlFor="email" className="text-[13px] font-semibold text-gray-700">
+                                        Email address
+                                    </label>
+                                    <input
+                                        id="email"
+                                        type="email"
+                                        autoComplete="email"
+                                        required
+                                        value={email}
+                                        onChange={(e: ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
+                                        className={inputClass}
+                                        placeholder="you@example.com"
+                                        disabled={submitting}
+                                    />
+                                </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label
-                            htmlFor="password"
-                            className="text-[13px] font-semibold text-gray-700"
-                        >
-                            Password
-                        </label>
-                        <input
-                            id="password"
-                            type="password"
-                            autoComplete="new-password"
-                            required
-                            value={password}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                                setPassword(e.target.value);
-                                setPasswordTouched(true);
-                            }}
-                            className="w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand disabled:opacity-50"
-                            placeholder="Min. 8 characters"
-                            disabled={submitting}
-                        />
-                        {passwordTouched && (
-                            <ul
-                                className="mt-1.5 flex flex-col gap-1 pl-0 list-none m-0"
-                                aria-label="Password requirements"
-                            >
-                                {(
-                                    [
-                                        [
-                                            policy.length,
-                                            "At least 8 characters",
-                                        ],
-                                        [
-                                            policy.uppercase,
-                                            "One uppercase letter (A–Z)",
-                                        ],
-                                        [
-                                            policy.lowercase,
-                                            "One lowercase letter (a–z)",
-                                        ],
-                                        [policy.number, "One number (0–9)"],
-                                        [
-                                            policy.symbol,
-                                            "One special character (!@#$…)",
-                                        ],
-                                    ] as [boolean, string][]
-                                ).map(([met, label]) => (
-                                    <li
-                                        key={label}
-                                        className="flex items-center gap-1.5 text-[12px] font-medium"
-                                    >
-                                        <span
-                                            className={
-                                                met
-                                                    ? "text-brand"
-                                                    : "text-gray-400"
-                                            }
+                                <div className="flex flex-col gap-1.5">
+                                    <label htmlFor="password" className="text-[13px] font-semibold text-gray-700">
+                                        Password
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            id="password"
+                                            type={showPassword ? "text" : "password"}
+                                            autoComplete="new-password"
+                                            required
+                                            value={password}
+                                            onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                                                setPassword(e.target.value);
+                                                setPasswordTouched(true);
+                                            }}
+                                            className={`${inputClass} pr-10`}
+                                            placeholder="Min. 8 characters"
+                                            disabled={submitting}
+                                        />
+                                        <button
+                                            type="button"
+                                            className={eyeToggleClass}
+                                            onClick={() => setShowPassword((v) => !v)}
+                                            aria-label={showPassword ? "Hide password" : "Show password"}
+                                            tabIndex={-1}
                                         >
-                                            {met ? "✓" : "○"}
-                                        </span>
-                                        <span
-                                            className={
-                                                met
-                                                    ? "text-brand"
-                                                    : "text-gray-400"
-                                            }
-                                        >
-                                            {label}
-                                        </span>
-                                    </li>
-                                ))}
-                            </ul>
-                        )}
-                    </div>
+                                            <EyeIcon visible={showPassword} />
+                                        </button>
+                                    </div>
+                                    {passwordTouched && (
+                                        <ul className="mt-1.5 flex flex-col gap-1 pl-0 list-none m-0" aria-label="Password requirements">
+                                            {(
+                                                [
+                                                    [policy.length, "At least 8 characters"],
+                                                    [policy.uppercase, "One uppercase letter (A–Z)"],
+                                                    [policy.lowercase, "One lowercase letter (a–z)"],
+                                                    [policy.number, "One number (0–9)"],
+                                                    [policy.symbol, "One special character (!@#$…)"],
+                                                ] as [boolean, string][]
+                                            ).map(([met, label]) => (
+                                                <li key={label} className="flex items-center gap-1.5 text-[12px] font-medium">
+                                                    <span className={met ? "text-brand" : "text-gray-400"}>{met ? "✓" : "○"}</span>
+                                                    <span className={met ? "text-brand" : "text-gray-400"}>{label}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    )}
+                                </div>
 
-                    <div className="flex flex-col gap-1.5">
-                        <label
-                            htmlFor="password-confirm"
-                            className="text-[13px] font-semibold text-gray-700"
-                        >
-                            Confirm password
-                        </label>
-                        <input
-                            id="password-confirm"
-                            type="password"
-                            autoComplete="new-password"
-                            required
-                            value={passwordConfirmation}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                setPasswordConfirmation(e.target.value)
-                            }
-                            className="w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand disabled:opacity-50"
-                            placeholder="••••••••"
-                            disabled={submitting}
-                        />
-                    </div>
+                                <div className="flex flex-col gap-1.5">
+                                    <label htmlFor="password-confirm" className="text-[13px] font-semibold text-gray-700">
+                                        Confirm password
+                                    </label>
+                                    <div className="relative">
+                                        <input
+                                            id="password-confirm"
+                                            type={showConfirm ? "text" : "password"}
+                                            autoComplete="new-password"
+                                            required
+                                            value={passwordConfirmation}
+                                            onChange={(e: ChangeEvent<HTMLInputElement>) => setPasswordConfirmation(e.target.value)}
+                                            className={`${inputClass} pr-10`}
+                                            placeholder="••••••••"
+                                            disabled={submitting}
+                                        />
+                                        <button
+                                            type="button"
+                                            className={eyeToggleClass}
+                                            onClick={() => setShowConfirm((v) => !v)}
+                                            aria-label={showConfirm ? "Hide confirm password" : "Show confirm password"}
+                                            tabIndex={-1}
+                                        >
+                                            <EyeIcon visible={showConfirm} />
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
+                        );
+                    })()}
 
                     {error && (
                         <p

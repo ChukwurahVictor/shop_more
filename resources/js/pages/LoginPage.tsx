@@ -1,12 +1,27 @@
-import { type ChangeEvent, type FC, type FormEvent, useState } from "react";
+import { type ChangeEvent, type FormEvent, useState } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
 import { isAxiosError } from "axios";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { usePageTitle } from "../hooks/usePageTitle";
 
 interface LocationState {
     from?: { pathname: string };
 }
+
+const EyeIcon: FC<{ visible: boolean }> = ({ visible }) =>
+    visible ? (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94" />
+            <path d="M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19" />
+            <line x1="1" y1="1" x2="23" y2="23" />
+        </svg>
+    ) : (
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+        </svg>
+    );
 
 const LoginPage: FC = () => {
     const { login, isAuthenticated } = useAuth();
@@ -15,8 +30,11 @@ const LoginPage: FC = () => {
     const location = useLocation();
     const from = (location.state as LocationState)?.from?.pathname ?? "/";
 
+    usePageTitle("Sign in");
+
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [submitting, setSubmitting] = useState(false);
 
@@ -46,6 +64,9 @@ const LoginPage: FC = () => {
             setSubmitting(false);
         }
     }
+
+    const inputClass =
+        "w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:opacity-50";
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-gray-50 to-amber-50 px-4 py-6">
@@ -103,7 +124,7 @@ const LoginPage: FC = () => {
                             onChange={(e: ChangeEvent<HTMLInputElement>) =>
                                 setEmail(e.target.value)
                             }
-                            className="w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand disabled:opacity-50"
+                            className={inputClass}
                             placeholder="you@example.com"
                             disabled={submitting}
                         />
@@ -116,19 +137,30 @@ const LoginPage: FC = () => {
                         >
                             Password
                         </label>
-                        <input
-                            id="password"
-                            type="password"
-                            autoComplete="current-password"
-                            required
-                            value={password}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                setPassword(e.target.value)
-                            }
-                            className="w-full px-3.5 py-[11px] text-sm border border-gray-300 rounded-lg bg-gray-50 text-gray-900 outline-none transition-colors duration-150 focus:border-brand disabled:opacity-50"
-                            placeholder="••••••••"
-                            disabled={submitting}
-                        />
+                        <div className="relative">
+                            <input
+                                id="password"
+                                type={showPassword ? "text" : "password"}
+                                autoComplete="current-password"
+                                required
+                                value={password}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                    setPassword(e.target.value)
+                                }
+                                className={`${inputClass} pr-10`}
+                                placeholder="••••••••"
+                                disabled={submitting}
+                            />
+                            <button
+                                type="button"
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors duration-150 bg-transparent border-0 cursor-pointer p-0"
+                                onClick={() => setShowPassword((v) => !v)}
+                                aria-label={showPassword ? "Hide password" : "Show password"}
+                                tabIndex={-1}
+                            >
+                                <EyeIcon visible={showPassword} />
+                            </button>
+                        </div>
                     </div>
 
                     {error && (

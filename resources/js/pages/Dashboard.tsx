@@ -4,6 +4,7 @@ import { useAchievements } from "../hooks/useAchievements";
 import { simulatePurchase } from "../api/achievements";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
+import { usePageTitle } from "../hooks/usePageTitle";
 import type { BadgeTier } from "../types";
 import {
     BADGE_GRADIENT,
@@ -43,6 +44,8 @@ const Dashboard: FC = () => {
     const { user, logout } = useAuth();
     const { toast } = useToast();
     const userId = user!.id;
+
+    usePageTitle("Dashboard");
 
     const [purchasingId, setPurchasingId] = useState<number | null>(null);
     const [recentlyPurchased, setRecentlyPurchased] = useState<Set<number>>(
