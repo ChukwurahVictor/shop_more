@@ -57,31 +57,37 @@ This account starts with 0 purchases and a Bronze badge — make purchases in th
 ### Start
 
 ```bash
-docker compose up
+npm start
 ```
 
-On first run Docker will:
-1. Build the PHP image and install Composer dependencies
-2. Run all migrations automatically
-3. Seed the database with test users
-4. Start the Vite dev server with HMR
+> This runs `docker compose up` under the hood. On first run Docker will:
+> 1. Build the PHP image and install Composer dependencies
+> 2. Run all migrations automatically
+> 3. Seed the database with test users
+> 4. Start the Vite dev server with HMR
 
 | Service | URL |
 |---------|-----|
 | **React frontend / Laravel** | http://localhost:8088 |
 | **Vite HMR (asset server)** | http://localhost:5175 |
 
+### Rebuild images (after Dockerfile changes)
+
+```bash
+npm run start:build
+```
+
 ### Stop
 
 ```bash
-docker compose down
+npm run stop
 ```
 
 ### Reset database
 
 ```bash
-docker compose down -v   # removes SQLite volume
-docker compose up
+npm run stop -- -v   # removes SQLite volume
+npm start
 ```
 
 ---
