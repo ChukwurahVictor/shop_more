@@ -2,10 +2,16 @@
     "private": true,
     "type": "module",
     "scripts": {
+        "start": "docker compose up",
+        "start:build": "docker compose up --build",
+        "stop": "docker compose down",
         "dev": "vite",
         "build": "vite build",
         "lint": "eslint .",
-        "preview": "vite preview"
+        "preview": "vite preview",
+        "test:frontend": "vitest run",
+        "test:frontend:watch": "vitest",
+        "test:frontend:coverage": "vitest run --coverage"
     },
     "dependencies": {
         "@tanstack/react-query": "^5.99.0",
@@ -16,19 +22,26 @@
     },
     "devDependencies": {
         "@eslint/js": "^9.39.4",
+        "@testing-library/dom": "^10.4.1",
+        "@testing-library/jest-dom": "^6.9.1",
+        "@testing-library/react": "^16.3.2",
+        "@testing-library/user-event": "^14.6.1",
         "@types/react": "^19.2.14",
         "@types/react-dom": "^19.2.3",
         "@vitejs/plugin-react": "^6.0.1",
+        "@vitest/coverage-v8": "^4.1.4",
         "autoprefixer": "^10.4.20",
         "concurrently": "^9.0.1",
         "eslint": "^9.39.4",
         "eslint-plugin-react-hooks": "^7.0.1",
         "eslint-plugin-react-refresh": "^0.5.2",
         "globals": "^17.4.0",
+        "jsdom": "^29.0.2",
         "laravel-vite-plugin": "^1.2.0",
         "postcss": "^8.4.47",
         "tailwindcss": "^3.4.13",
         "typescript": "^6.0.2",
-        "vite": "^8.0.4"
+        "vite": "^8.0.4",
+        "vitest": "^4.1.4"
     }
 }
