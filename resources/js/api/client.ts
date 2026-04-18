@@ -1,6 +1,14 @@
 import axios from 'axios';
 
 export const TOKEN_KEY = "shopmore_token";
+const USER_KEY = "shopmore_user";
+
+// Registered by AuthContext so 401s clear React state instead of hard-navigating.
+let onUnauthorized: (() => void) | null = null;
+
+export function setOnUnauthorized(fn: () => void): void {
+    onUnauthorized = fn;
+}
 
 export const client = axios.create({
     baseURL: import.meta.env.VITE_API_URL || "http://localhost:8088",
@@ -16,14 +24,18 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
-// On 401, clear local auth state and redirect to login
+// On 401, clear local auth state and route through React instead of hard-navigating
 client.interceptors.response.use(
   (response) => response,
   (error: unknown) => {
     if (axios.isAxiosError(error) && error.response?.status === 401) {
       localStorage.removeItem(TOKEN_KEY);
-      localStorage.removeItem("shopmore_user");
-      window.location.replace('/login');
+      localStorage.removeItem(USER_KEY);
+      if (onUnauthorized) {
+        onUnauthorized();
+      } else {
+        window.location.replace('/login');
+      }
     }
     return Promise.reject(error);
   },

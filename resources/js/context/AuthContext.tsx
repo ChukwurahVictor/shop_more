@@ -2,13 +2,14 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type FC,
   type ReactNode,
 } from 'react';
 import { login as apiLogin, logout as apiLogout, register as apiRegister } from '../api/auth';
-import { TOKEN_KEY } from '../api/client';
+import { TOKEN_KEY, setOnUnauthorized } from '../api/client';
 import type { AuthUser, LoginPayload, RegisterPayload } from '../types';
 
 const USER_KEY = "shopmore_user";
@@ -34,6 +35,14 @@ function readStoredUser(): AuthUser | null {
 
 export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<AuthUser | null>(readStoredUser);
+
+  useEffect(() => {
+    setOnUnauthorized(() => {
+      localStorage.removeItem(TOKEN_KEY);
+      localStorage.removeItem(USER_KEY);
+      setUser(null);
+    });
+  }, []);
 
   const login = useCallback(async (payload: LoginPayload) => {
     const { token, user: authUser } = await apiLogin(payload);
